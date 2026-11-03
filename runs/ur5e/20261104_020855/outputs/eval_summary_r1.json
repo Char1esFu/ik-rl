@@ -1,0 +1,22 @@
+{
+  "checkpoint": "runs/ur5e/20261104_020855/checkpoints/best_model.pt",
+  "robot": "ur5e",
+  "num_tests": 500,
+  "num_restarts": 1,
+  "success_rate_5mm_2.86deg_pct": 92.0,
+  "success_rate_2mm_1.15deg_pct": 91.2,
+  "pos_err_mm": {
+    "mean": 8.553,
+    "median": 1.464,
+    "p95": 25.805,
+    "max": 590.268
+  },
+  "rot_err_deg": {
+    "mean": 2.84,
+    "median": 0.86,
+    "p95": 6.108,
+    "max": 175.097
+  },
+  "mean_steps": 25.48,
+  "mean_solve_time_ms": 7.85
+}

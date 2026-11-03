@@ -1,0 +1,26 @@
+[Init] Run directory: runs/ur5e/20261104_020855
+[Init] Device: cuda (NVIDIA GeForce RTX 4090)
+[Init] Creating 64 vectorized Universal Robots UR5e MuJoCo envs...
+[Train] Starting SAC | total_steps=1,600,000 | batch_size=1024 | updates_per_rollout=6
+[Step  80,000/1,600,000] SR(5mm):  79.0% | SR(2mm):  72.0% | PosErr: 18.19mm (med 0.36mm) | RotErr: 2.90° (med 0.06°) | Steps: 33.2 | α: 0.0132 | SPS: 2,799 | t=28.6s
+[Step 160,000/1,600,000] SR(5mm):  83.5% | SR(2mm):  79.0% | PosErr: 11.76mm (med 0.33mm) | RotErr: 3.83° (med 0.08°) | Steps: 29.0 | α: 0.0094 | SPS: 2,535 | t=63.1s
+[Step 240,000/1,600,000] SR(5mm):  86.5% | SR(2mm):  83.0% | PosErr: 15.00mm (med 0.40mm) | RotErr: 3.80° (med 0.09°) | Steps: 27.8 | α: 0.0080 | SPS: 2,443 | t=98.2s
+[Step 320,000/1,600,000] SR(5mm):  90.0% | SR(2mm):  84.0% | PosErr: 12.93mm (med 0.39mm) | RotErr: 2.30° (med 0.08°) | Steps: 24.9 | α: 0.0072 | SPS: 2,396 | t=133.5s
+[Step 400,000/1,600,000] SR(5mm):  88.0% | SR(2mm):  84.5% | PosErr: 16.49mm (med 0.42mm) | RotErr: 3.59° (med 0.09°) | Steps: 26.2 | α: 0.0066 | SPS: 2,370 | t=168.8s
+[Step 480,000/1,600,000] SR(5mm):  90.0% | SR(2mm):  85.5% | PosErr:  9.51mm (med 0.41mm) | RotErr: 2.78° (med 0.09°) | Steps: 24.3 | α: 0.0063 | SPS: 2,358 | t=203.6s
+[Step 560,000/1,600,000] SR(5mm):  88.0% | SR(2mm):  83.5% | PosErr: 14.83mm (med 0.39mm) | RotErr: 2.81° (med 0.09°) | Steps: 25.6 | α: 0.0058 | SPS: 2,346 | t=238.7s
+[Step 640,000/1,600,000] SR(5mm):  90.5% | SR(2mm):  88.0% | PosErr:  8.49mm (med 0.40mm) | RotErr: 1.80° (med 0.09°) | Steps: 24.6 | α: 0.0057 | SPS: 2,339 | t=273.6s
+[Step 720,000/1,600,000] SR(5mm):  92.0% | SR(2mm):  87.5% | PosErr:  7.36mm (med 0.38mm) | RotErr: 1.52° (med 0.10°) | Steps: 23.2 | α: 0.0054 | SPS: 2,333 | t=308.6s
+[Step 800,000/1,600,000] SR(5mm):  91.0% | SR(2mm):  88.0% | PosErr:  4.25mm (med 0.37mm) | RotErr: 0.87° (med 0.11°) | Steps: 24.1 | α: 0.0052 | SPS: 2,329 | t=343.4s
+[Step 880,000/1,600,000] SR(5mm):  90.5% | SR(2mm):  89.0% | PosErr:  7.58mm (med 0.35mm) | RotErr: 1.71° (med 0.10°) | Steps: 23.8 | α: 0.0051 | SPS: 2,325 | t=378.6s
+[Step 960,000/1,600,000] SR(5mm):  91.0% | SR(2mm):  89.5% | PosErr:  9.28mm (med 0.39mm) | RotErr: 1.92° (med 0.11°) | Steps: 23.5 | α: 0.0050 | SPS: 2,321 | t=413.6s
+[Step 1,040,000/1,600,000] SR(5mm):  90.0% | SR(2mm):  85.5% | PosErr: 12.74mm (med 0.38mm) | RotErr: 3.10° (med 0.11°) | Steps: 23.5 | α: 0.0048 | SPS: 2,319 | t=448.4s
+[Step 1,120,000/1,600,000] SR(5mm):  89.0% | SR(2mm):  87.5% | PosErr: 10.43mm (med 0.38mm) | RotErr: 2.20° (med 0.11°) | Steps: 24.1 | α: 0.0047 | SPS: 2,316 | t=483.7s
+[Step 1,200,000/1,600,000] SR(5mm):  91.5% | SR(2mm):  87.5% | PosErr:  8.00mm (med 0.41mm) | RotErr: 2.32° (med 0.11°) | Steps: 22.9 | α: 0.0046 | SPS: 2,310 | t=519.5s
+[Step 1,280,000/1,600,000] SR(5mm):  91.0% | SR(2mm):  90.0% | PosErr:  7.19mm (med 0.42mm) | RotErr: 2.04° (med 0.10°) | Steps: 22.5 | α: 0.0045 | SPS: 2,307 | t=554.9s
+[Step 1,360,000/1,600,000] SR(5mm):  91.5% | SR(2mm):  88.0% | PosErr:  7.64mm (med 0.42mm) | RotErr: 1.78° (med 0.10°) | Steps: 22.8 | α: 0.0044 | SPS: 2,303 | t=590.6s
+[Step 1,440,000/1,600,000] SR(5mm):  88.5% | SR(2mm):  85.5% | PosErr: 10.78mm (med 0.39mm) | RotErr: 1.82° (med 0.12°) | Steps: 24.1 | α: 0.0043 | SPS: 2,301 | t=625.7s
+[Step 1,520,000/1,600,000] SR(5mm):  94.0% | SR(2mm):  90.5% | PosErr:  5.54mm (med 0.37mm) | RotErr: 0.75° (med 0.11°) | Steps: 22.1 | α: 0.0043 | SPS: 2,301 | t=660.6s
+[Step 1,600,000/1,600,000] SR(5mm):  91.0% | SR(2mm):  89.5% | PosErr:  8.83mm (med 0.40mm) | RotErr: 2.61° (med 0.10°) | Steps: 22.5 | α: 0.0042 | SPS: 2,301 | t=695.4s
+
+[Done] Training completed in 695.8s! Best checkpoint saved to runs/ur5e/20261104_020855/checkpoints/best_model.pt

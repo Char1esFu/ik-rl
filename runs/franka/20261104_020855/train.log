@@ -1,0 +1,26 @@
+[Init] Run directory: runs/franka/20261104_020855
+[Init] Device: cuda (NVIDIA GeForce RTX 4090)
+[Init] Creating 64 vectorized Franka Emika Panda MuJoCo envs...
+[Train] Starting SAC | total_steps=1,600,000 | batch_size=1024 | updates_per_rollout=6
+[Step  80,000/1,600,000] SR(5mm):  84.0% | SR(2mm):  79.5% | PosErr: 17.88mm (med 0.31mm) | RotErr: 4.37° (med 0.06°) | Steps: 28.0 | α: 0.0127 | SPS: 2,738 | t=29.2s
+[Step 160,000/1,600,000] SR(5mm):  93.5% | SR(2mm):  92.5% | PosErr:  8.49mm (med 0.27mm) | RotErr: 2.24° (med 0.07°) | Steps: 20.0 | α: 0.0073 | SPS: 2,473 | t=64.7s
+[Step 240,000/1,600,000] SR(5mm):  95.0% | SR(2mm):  94.5% | PosErr:  9.70mm (med 0.25mm) | RotErr: 1.87° (med 0.06°) | Steps: 19.7 | α: 0.0057 | SPS: 2,405 | t=99.8s
+[Step 320,000/1,600,000] SR(5mm):  97.0% | SR(2mm):  94.5% | PosErr:  1.05mm (med 0.24mm) | RotErr: 0.32° (med 0.06°) | Steps: 16.6 | α: 0.0048 | SPS: 2,373 | t=134.8s
+[Step 400,000/1,600,000] SR(5mm):  94.5% | SR(2mm):  93.0% | PosErr:  8.61mm (med 0.27mm) | RotErr: 1.98° (med 0.05°) | Steps: 19.0 | α: 0.0043 | SPS: 2,349 | t=170.3s
+[Step 480,000/1,600,000] SR(5mm):  96.0% | SR(2mm):  95.5% | PosErr:  1.22mm (med 0.26mm) | RotErr: 0.62° (med 0.05°) | Steps: 16.9 | α: 0.0040 | SPS: 2,334 | t=205.7s
+[Step 560,000/1,600,000] SR(5mm):  98.0% | SR(2mm):  97.5% | PosErr:  1.61mm (med 0.25mm) | RotErr: 0.52° (med 0.05°) | Steps: 15.4 | α: 0.0037 | SPS: 2,326 | t=240.8s
+[Step 640,000/1,600,000] SR(5mm):  99.0% | SR(2mm):  99.0% | PosErr:  1.16mm (med 0.24mm) | RotErr: 0.13° (med 0.05°) | Steps: 14.8 | α: 0.0035 | SPS: 2,319 | t=275.9s
+[Step 720,000/1,600,000] SR(5mm):  98.5% | SR(2mm):  97.5% | PosErr:  0.85mm (med 0.23mm) | RotErr: 0.16° (med 0.06°) | Steps: 15.4 | α: 0.0034 | SPS: 2,317 | t=310.8s
+[Step 800,000/1,600,000] SR(5mm):  99.0% | SR(2mm):  98.5% | PosErr:  0.52mm (med 0.22mm) | RotErr: 0.16° (med 0.05°) | Steps: 14.6 | α: 0.0032 | SPS: 2,315 | t=345.6s
+[Step 880,000/1,600,000] SR(5mm):  98.5% | SR(2mm):  98.0% | PosErr:  3.23mm (med 0.22mm) | RotErr: 0.49° (med 0.06°) | Steps: 15.2 | α: 0.0031 | SPS: 2,311 | t=380.7s
+[Step 960,000/1,600,000] SR(5mm):  99.5% | SR(2mm):  98.0% | PosErr:  0.65mm (med 0.23mm) | RotErr: 0.20° (med 0.05°) | Steps: 15.1 | α: 0.0031 | SPS: 2,305 | t=416.4s
+[Step 1,040,000/1,600,000] SR(5mm):  97.5% | SR(2mm):  96.5% | PosErr:  5.94mm (med 0.23mm) | RotErr: 1.08° (med 0.05°) | Steps: 15.3 | α: 0.0030 | SPS: 2,301 | t=452.0s
+[Step 1,120,000/1,600,000] SR(5mm):  97.0% | SR(2mm):  96.0% | PosErr:  3.25mm (med 0.23mm) | RotErr: 0.59° (med 0.06°) | Steps: 15.3 | α: 0.0029 | SPS: 2,296 | t=487.8s
+[Step 1,200,000/1,600,000] SR(5mm):  99.0% | SR(2mm):  99.0% | PosErr:  2.25mm (med 0.25mm) | RotErr: 0.48° (med 0.05°) | Steps: 13.3 | α: 0.0029 | SPS: 2,290 | t=523.9s
+[Step 1,280,000/1,600,000] SR(5mm):  98.5% | SR(2mm):  98.5% | PosErr:  3.52mm (med 0.24mm) | RotErr: 0.79° (med 0.06°) | Steps: 14.3 | α: 0.0028 | SPS: 2,289 | t=559.1s
+[Step 1,360,000/1,600,000] SR(5mm):  99.5% | SR(2mm):  99.5% | PosErr:  0.48mm (med 0.25mm) | RotErr: 0.18° (med 0.06°) | Steps: 13.8 | α: 0.0027 | SPS: 2,288 | t=594.3s
+[Step 1,440,000/1,600,000] SR(5mm):  97.5% | SR(2mm):  97.0% | PosErr:  1.83mm (med 0.26mm) | RotErr: 0.91° (med 0.06°) | Steps: 15.1 | α: 0.0027 | SPS: 2,288 | t=629.5s
+[Step 1,520,000/1,600,000] SR(5mm):  98.0% | SR(2mm):  96.5% | PosErr:  4.65mm (med 0.25mm) | RotErr: 1.69° (med 0.05°) | Steps: 14.5 | α: 0.0026 | SPS: 2,285 | t=665.3s
+[Step 1,600,000/1,600,000] SR(5mm):  99.0% | SR(2mm):  99.0% | PosErr:  1.48mm (med 0.25mm) | RotErr: 0.18° (med 0.05°) | Steps: 14.4 | α: 0.0025 | SPS: 2,285 | t=700.3s
+
+[Done] Training completed in 700.7s! Best checkpoint saved to runs/franka/20261104_020855/checkpoints/best_model.pt

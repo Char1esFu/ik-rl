@@ -1,0 +1,17 @@
+[project]
+name = "ik-rl"
+version = "0.1.0"
+description = "Learned 6D inverse kinematics for robot arms (Franka Panda, UR5e) in MuJoCo using Soft Actor-Critic (SAC)"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "gymnasium>=1.0.0",
+    "matplotlib>=3.8.0",
+    "mujoco>=3.2.0",
+    "numpy>=2.0.0",
+    "pillow>=10.0.0",
+    "pyyaml>=6.0",
+    "torch>=2.4.0",
+    "websockets>=13.0",
+]
+

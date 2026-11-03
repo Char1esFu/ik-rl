@@ -1,0 +1,51 @@
+# The Robot Studio SO-101 (SO-ARM101), 5-DoF arm + gripper.
+# Units: meters, radians; quaternions [w, x, y, z]. Paths are relative to the repository root.
+#
+# With 5 arm joints not every 6D pose is reachable: the approach direction must lie in the vertical plane
+# through the shoulder-pan axis and the TCP (pan sets the plane; lift / elbow / wrist-flex pitch within it;
+# wrist-roll spins about the approach). Training / evaluation targets are FK of sampled joint
+# configurations, so they are always reachable.
+
+name: so101
+display_name: SO-ARM101
+scene_xml: mujoco_menagerie/robotstudio_so101/scene.xml
+
+arm_joints: [shoulder_pan, shoulder_lift, elbow_flex, wrist_flex, wrist_roll]
+
+# Gripper held closed
+fixed_joints:
+  gripper: 0.0
+
+# TCP = menagerie's `gripperframe` site (between the jaw tips). That site's x-axis is the approach
+# direction; ee_quat additionally rotates 180 deg about x so the TCP z-axis is the approach direction,
+# as for the other robots (Point Down / figure-8 conventions).
+ee_body: gripper
+ee_offset: [0.012, -0.000218, -0.098127]
+ee_quat: [0.0, 1.0, 0.0, 0.0]
+
+# The arm faces +x at q = 0. Home: TCP ~ (0.28, 0, 0.13), gripper tilted 45 deg below horizontal,
+# all joints >= 0.6 rad from their limits.
+home_q: [0.0, -0.6, 0.6, 0.8, 0.0]
+
+# Joint box: positive shoulder_lift / elbow_flex / wrist_flex pitch the arm down.
+#   shoulder_pan  [-1.5, 1.5]    +-86 deg (joint limit +-110 deg), keeps targets in front of the base
+#   shoulder_lift [-1.2, 0.5]    > 0.5 drives the arm into the floor, < -1.2 swings it back over the base
+#   elbow_flex, wrist_flex, wrist_roll: full joint range
+# ~13% of samples collide (mostly gripper / forearm vs floor); ~47% are accepted as targets.
+sample_q_low: [-1.5, -1.2, -1.69, -1.658063, -2.7438473]
+sample_q_high: [1.5, 0.5, 1.69, 1.658063, 2.8412063]
+
+workspace_low: [0.08, -0.35, 0.03]
+workspace_high: [0.45, 0.35, 0.45]
+start_pos_min: [0.03, -.inf, 0.03]
+
+camera_lookat: [0.17, 0.0, 0.2]
+camera_distance: 0.95
+
+# Viewer figure-8: gripper 45 deg below horizontal, yaw following the target's azimuth around the pan axis
+# (reachable for a 5-DoF arm; pitch varies within the arm plane, roll cannot).
+fig8_center: [0.24, 0.0, 0.14]
+fig8_amplitude: [0.05, 0.12, 0.05]
+fig8_rpy_deg: [180.0, -45.0, 0.0]
+fig8_rpy_amplitude_deg: [0.0, 10.0, 0.0]
+fig8_radial_yaw: true
