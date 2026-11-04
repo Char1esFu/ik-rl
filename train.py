@@ -7,6 +7,7 @@ from datetime import datetime
 import json
 import math
 from pathlib import Path
+import signal
 import time
 
 import matplotlib
@@ -16,63 +17,13 @@ import numpy as np
 import torch
 
 from ik_rl.config import IKConfig, SACConfig, coerce_value, load_experiment, merge_overrides, parse_set_args
-from ik_rl.env import VectorIKEnv
+from ik_rl.env import IKEnv, VectorIKEnv
+from ik_rl.evaluation import EvalTargets, evaluate_parked, evaluate_solver
 from ik_rl.obs import OBS_FEATURES
 from ik_rl.replay_buffer import GPUReplayBuffer
 from ik_rl.robot import DEFAULT_ROBOT, RobotSpec, available_robots, get_robot
 from ik_rl.sac import SACAgent
-
-
-def evaluate_policy(
-    agent: SACAgent,
-    eval_env: VectorIKEnv,
-    num_episodes: int = 128,
-) -> dict[str, float]:
-    """Run deterministic policy rollouts on fresh random 6D targets and measure final parked accuracy."""
-    obs = eval_env.reset()
-    n_envs = eval_env.num_envs
-    first_solved_step = np.full(n_envs, eval_env.cfg.max_episode_steps, dtype=np.int32)
-    cur_step = np.zeros(n_envs, dtype=np.int32)
-
-    pos_errs: list[float] = []
-    rot_errs_deg: list[float] = []
-    successes_5mm: list[bool] = []
-    successes_2mm: list[bool] = []
-    ep_steps: list[int] = []
-
-    episodes_target = max(num_episodes, n_envs)
-    while len(pos_errs) < episodes_target:
-        actions = agent.select_action(obs, deterministic=True)
-        obs, _, terminated, truncated, info = eval_env.step(actions)
-        cur_step += 1
-        newly_solved = info["is_success"] & (first_solved_step == eval_env.cfg.max_episode_steps)
-        first_solved_step = np.where(newly_solved, cur_step, first_solved_step)
-
-        dones = terminated | truncated
-        for i in np.flatnonzero(dones):
-            pe = float(info["pos_err"][i])
-            re_deg = float(np.degrees(info["rot_err"][i]))
-            pos_errs.append(pe * 1000.0)  # final parked error (mm)
-            rot_errs_deg.append(re_deg)   # final parked error (deg)
-            successes_5mm.append(bool(info["is_success"][i]))
-            successes_2mm.append(bool(info["is_tight_success"][i]))
-            ep_steps.append(int(first_solved_step[i]))
-            first_solved_step[i] = eval_env.cfg.max_episode_steps
-            cur_step[i] = 0
-            if len(pos_errs) >= episodes_target:
-                break
-
-    pos_arr = np.array(pos_errs, dtype=np.float64)
-    rot_arr = np.array(rot_errs_deg, dtype=np.float64)
-    return {
-        "success_rate_5mm": float(np.mean(successes_5mm) * 100.0),
-        "success_rate_2mm": float(np.mean(successes_2mm) * 100.0),
-        "mean_pos_err_mm": float(np.mean(pos_arr)),
-        "median_pos_err_mm": float(np.median(pos_arr)),
-        "mean_rot_err_deg": float(np.mean(rot_arr)),
-        "median_rot_err_deg": float(np.median(rot_arr)),
-        "mean_steps": float(np.mean(ep_steps)),
-    }
+from ik_rl.solver import SACIKSolver
 
 
 def save_training_curves(history: list[dict[str, float]], out_path: Path, title: str = "6D IK") -> None:
@@ -93,12 +44,15 @@ def save_training_curves(history: list[dict[str, float]], out_path: Path, title:
     ax = axes[0, 0]
     ax.plot(steps, sr5, "o-", lw=2.2, label="Success (< 5 mm & < 2.86°)")
     ax.plot(steps, sr2, "s--", lw=2.0, label="Tight Success (< 2 mm & < 1.15°)")
+    if all("parked_success_rate_2mm" in h for h in history):
+        ax.plot(steps, [h["parked_success_rate_2mm"] for h in history], ":", lw=1.6, color="gray",
+                label="Tight Success, fixed horizon (parked)")
     ax.set_xlabel("Environment Steps (×10³)")
     ax.set_ylabel("Success Rate (%)")
     ax.set_ylim(-2, 103)
     ax.grid(True, alpha=0.3)
     ax.legend(loc="lower right")
-    ax.set_title("6D IK Solve Success Rate")
+    ax.set_title("6D IK Solve Success Rate (solver, 1 start)")
 
     ax = axes[0, 1]
     ax.plot(steps, pos_mm, "o-", lw=2.2, color="#d62728", label="Mean Position Error")
@@ -196,7 +150,43 @@ def build_configs(
     return env_cfg, sac_cfg
 
 
-def main() -> None:
+RESUME_FILE = "resume_state.pt"
+# Options a resumed run may change; everything else comes from the run's config.json
+RESUME_OVERRIDABLE = (
+    "total_steps", "early_stop_sr", "early_stop_window", "plateau_patience", "resume_interval", "compile",
+)
+
+
+def eval_score(stats: dict[str, float]) -> float:
+    """best_model.pt selection score (lower is better): 5 mm / 2 mm success first, median errors break ties."""
+    return (
+        -10.0 * stats["success_rate_5mm"]
+        - 5.0 * stats["success_rate_2mm"]
+        + stats["median_pos_err_mm"]
+        + stats["median_rot_err_deg"]
+    )
+
+
+def early_stop_reason(history: list[dict[str, float]], args: argparse.Namespace) -> str | None:
+    """Early-stop check on the eval history (stateless, so it works unchanged after --resume).
+
+    A (good enough): mean 2 mm success of the last `early_stop_window` evals >= `early_stop_sr`.
+    C (plateau): the best_model score has not improved for `plateau_patience` evals.
+    """
+    if args.early_stop_window > 0 and len(history) >= args.early_stop_window:
+        recent = [h["success_rate_2mm"] for h in history[-args.early_stop_window:]]
+        mean = sum(recent) / len(recent)
+        if mean >= args.early_stop_sr:
+            return f"mean SR(2mm) of the last {len(recent)} evals = {mean:.2f}% >= {args.early_stop_sr}%"
+    if args.plateau_patience > 0:
+        scores = [eval_score(h) for h in history]
+        since_best = len(scores) - 1 - scores.index(min(scores))
+        if since_best >= args.plateau_patience:
+            return f"no new best model for {since_best} evals (plateau)"
+    return None
+
+
+def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Train SAC for 6D IK in MuJoCo")
     parser.add_argument(
         "--robot", type=str, default=DEFAULT_ROBOT,
@@ -214,14 +204,41 @@ def main() -> None:
         "--set", nargs="+", default=[], metavar="SECTION.KEY=VALUE", dest="overrides",
         help="Override IKConfig / SACConfig fields, e.g. env.reward_scale=0.3 sac.gamma=0.97 (wins over --exp)",
     )
-    parser.add_argument("--total-steps", type=int, default=1_600_000, help="Total environment steps")
+    parser.add_argument(
+        "--resume", type=str, default=None, metavar="RUN_DIR",
+        help="Continue a run from <RUN_DIR>/checkpoints/resume_state.pt. Robot and configs come from the run's "
+        "config.json; only --total-steps, --early-stop-*, --plateau-patience, --resume-interval and --compile "
+        "may change. "
+        "Raising --total-steps stretches the cosine learning-rate schedule (the LR rises again)",
+    )
+    parser.add_argument("--total-steps", type=int, default=5_000_000, help="Total environment steps (upper bound)")
+    parser.add_argument(
+        "--early-stop-sr", type=float, default=98.5, metavar="PCT",
+        help="Early stop (good enough): mean 2 mm / 1.15 deg success rate (%%) of the last --early-stop-window evals",
+    )
+    parser.add_argument(
+        "--early-stop-window", type=int, default=5, metavar="N",
+        help="Number of recent evals averaged for --early-stop-sr (0 disables this criterion)",
+    )
+    parser.add_argument(
+        "--plateau-patience", type=int, default=15, metavar="N",
+        help="Early stop (plateau): stop when the best-model score has not improved for N evals (0 disables)",
+    )
+    parser.add_argument(
+        "--resume-interval", type=int, default=1_000_000,
+        help="Write the resume state every N env steps (also at the end, on early stop and on Ctrl+C; 0 = only then)",
+    )
     parser.add_argument("--num-envs", type=int, default=64, help="Parallel MuJoCo environments")
     parser.add_argument("--updates-per-rollout", type=int, default=6, help="SAC updates per rollout step")
     parser.add_argument("--batch-size", type=int, default=1024, help="SAC minibatch size")
     parser.add_argument("--buffer-size", type=int, default=2_000_000, help="GPU replay buffer capacity")
     parser.add_argument("--warmup-steps", type=int, default=16_000, help="Initial random exploration steps")
     parser.add_argument("--eval-interval", type=int, default=80_000, help="Evaluation interval in env steps")
-    parser.add_argument("--eval-episodes", type=int, default=200, help="Deterministic eval episodes")
+    parser.add_argument(
+        "--eval-episodes", type=int, default=500,
+        help="Evaluation size: fixed solver targets (curves, best model, early stop) and parked episodes",
+    )
+    parser.add_argument("--eval-max-steps", type=int, default=120, help="Solver step limit in evaluations")
     parser.add_argument("--compile", action="store_true", help="Enable torch.compile on SAC losses")
     parser.add_argument("--seed", type=int, default=42, help="Random seed")
     parser.add_argument("--runs-dir", type=str, default="runs", help="Parent directory for run folders")
@@ -230,6 +247,10 @@ def main() -> None:
     )
     parser.add_argument("--out-dir", type=str, default=None, help="Override outputs dir (default: <run>/outputs)")
     parser.add_argument("--ckpt-dir", type=str, default=None, help="Override checkpoint dir (default: <run>/checkpoints)")
+    return parser
+
+
+def setup_new_run(parser: argparse.ArgumentParser) -> tuple[argparse.Namespace, RobotSpec, IKConfig, SACConfig, dict, Path]:
     pre_args, _ = parser.parse_known_args()
     try:
         exp = load_experiment(pre_args.exp) if pre_args.exp else {}
@@ -243,32 +264,73 @@ def main() -> None:
         env_cfg, sac_cfg = build_configs(args, robot, overrides)
     except (ValueError, KeyError) as e:
         parser.error(str(e))
+    run_dir = Path(args.runs_dir) / robot.name / (args.run_name or datetime.now().strftime("%Y%m%d_%H%M%S"))
+    return args, robot, env_cfg, sac_cfg, overrides, run_dir
+
+
+def setup_resumed_run(parser: argparse.ArgumentParser) -> tuple[argparse.Namespace, RobotSpec, IKConfig, SACConfig, dict, Path]:
+    cli = parser.parse_args()
+    if cli.exp or cli.overrides or cli.obs_features:
+        parser.error("--exp / --set / --obs-features cannot be combined with --resume (the run's config is reused)")
+    run_dir = Path(cli.resume)
+    cfg_path = run_dir / "config.json"
+    if not cfg_path.exists():
+        parser.error(f"--resume: {cfg_path} not found")
+    with open(cfg_path, encoding="utf-8") as f:
+        saved = json.load(f)
+    args = argparse.Namespace(**{**vars(cli), **saved["args"]})  # options added later fall back to the CLI defaults
+    for key in RESUME_OVERRIDABLE:
+        if getattr(cli, key) != parser.get_default(key):
+            setattr(args, key, getattr(cli, key))
+    args.resume = cli.resume
+    robot = RobotSpec.from_dict(saved["robot_spec"])
+    env_cfg = IKConfig.from_dict(saved["env_config"])
+    sac_cfg = SACConfig.from_dict(saved["sac_config"])
+    return args, robot, env_cfg, sac_cfg, saved.get("overrides", {}), run_dir
+
+
+def save_resume_state(path: Path, payload: dict) -> None:
+    """Atomically write the full training state (written to a temp file, then renamed)."""
+    tmp = path.with_suffix(".tmp")
+    torch.save(payload, tmp)
+    tmp.replace(path)
+
+
+def main() -> None:
+    parser = build_parser()
+    resuming = parser.parse_known_args()[0].resume is not None
+    args, robot, env_cfg, sac_cfg, overrides, run_dir = (setup_resumed_run if resuming else setup_new_run)(parser)
 
     np.random.seed(args.seed)
     torch.manual_seed(args.seed)
     device = "cuda" if torch.cuda.is_available() else "cpu"
-    run_dir = Path(args.runs_dir) / robot.name / (args.run_name or datetime.now().strftime("%Y%m%d_%H%M%S"))
     out_dir = Path(args.out_dir) if args.out_dir else run_dir / "outputs"
     ckpt_dir = Path(args.ckpt_dir) if args.ckpt_dir else run_dir / "checkpoints"
     run_dir.mkdir(parents=True, exist_ok=True)
     out_dir.mkdir(parents=True, exist_ok=True)
     ckpt_dir.mkdir(parents=True, exist_ok=True)
+    resume_path = ckpt_dir / RESUME_FILE
 
     obs_size, act_size = sac_cfg.obs_dim, sac_cfg.act_dim
-    with open(run_dir / "config.json", "w", encoding="utf-8") as f:
-        json.dump(
-            {
-                "robot": robot.name,
-                "robot_spec": robot.to_dict(),
-                "args": vars(args),
-                "overrides": overrides,
-                "env_config": env_cfg.to_dict(),
-                "sac_config": sac_cfg.to_dict(),
-            },
-            f,
-            indent=2,
-        )
-    print(f"[Init] Run directory: {run_dir}")
+    run_config = {
+        "robot": robot.name,
+        "robot_spec": robot.to_dict(),
+        "args": vars(args),
+        "overrides": overrides,
+        "env_config": env_cfg.to_dict(),
+        "sac_config": sac_cfg.to_dict(),
+    }
+
+    def write_run_config(**extra: object) -> None:
+        with open(run_dir / "config.json", "w", encoding="utf-8") as f:
+            json.dump({**run_config, **extra}, f, indent=2)
+
+    if resuming:
+        with open(run_dir / "config.json", encoding="utf-8") as f:
+            previous = json.load(f)
+        run_config["resumes"] = previous.get("resumes", [])
+    write_run_config()
+    print(f"[Init] Run directory: {run_dir}{' (resuming)' if resuming else ''}")
 
     print(f"[Init] Device: {device} ({torch.cuda.get_device_name(0) if device == 'cuda' else 'CPU'})")
     print(f"[Init] Creating {args.num_envs} vectorized {robot.display_name} MuJoCo envs...")
@@ -276,18 +338,22 @@ def main() -> None:
     eval_env = VectorIKEnv(robot, num_envs=32, cfg=env_cfg, seed=args.seed + 1000, allow_chain_reset=False)
 
     agent = SACAgent(cfg=sac_cfg, device=device, use_compile=args.compile)
+    # Evaluation = eval.py protocol (single start): fixed targets, solver on the live agent
+    eval_solver = SACIKSolver.from_agent(agent, robot, env_cfg)
+    eval_targets = EvalTargets.sample(
+        IKEnv(robot, cfg=env_cfg), args.eval_episodes, np.random.default_rng(args.seed + 2000)
+    )
     buffer = GPUReplayBuffer(
         obs_dim=obs_size, act_dim=act_size, capacity=args.buffer_size, device=device
     )
 
-    obs = vec_env.reset()
     env_steps = 0
     grad_updates = 0
     next_eval_step = args.eval_interval
+    next_resume_save = args.resume_interval
     best_score = float("inf")
+    elapsed_before = 0.0
     history: list[dict[str, float]] = []
-
-    t_start = time.perf_counter()
     last_metrics: dict[str, float] = {
         "critic_loss": 0.0,
         "actor_loss": 0.0,
@@ -296,12 +362,83 @@ def main() -> None:
         "entropy": 0.0,
     }
 
+    if resuming:
+        if not resume_path.exists():
+            parser.error(f"--resume: {resume_path} not found")
+        print(f"[Init] Loading resume state {resume_path} ...")
+        state = torch.load(resume_path, map_location="cpu", weights_only=False)
+        agent.load_training_state(state["agent"])
+        buffer.load_state_dict(state["buffer"])
+        obs = vec_env.set_state(state["vec_env"])
+        eval_env.set_state(state["eval_env"])
+        np.random.set_state(state["rng"]["numpy"])
+        torch.set_rng_state(state["rng"]["torch"])
+        if device == "cuda" and state["rng"].get("cuda") is not None:
+            torch.cuda.set_rng_state_all(state["rng"]["cuda"])
+        c = state["counters"]
+        env_steps, grad_updates = c["env_steps"], c["grad_updates"]
+        next_eval_step, best_score = c["next_eval_step"], c["best_score"]
+        elapsed_before = c["elapsed_sec"]
+        next_resume_save = (env_steps // args.resume_interval + 1) * args.resume_interval if args.resume_interval > 0 else 0
+        history, last_metrics = state["history"], state["last_metrics"]
+        del state
+        run_config["resumes"].append({"from_env_steps": env_steps, "total_steps": args.total_steps,
+                                      "at": datetime.now().isoformat(timespec="seconds")})
+        write_run_config()
+        print(f"[Init] Resumed at env step {env_steps:,} (buffer {buffer.size:,}, {len(history)} evals)")
+    else:
+        obs = vec_env.reset()
+
+    def resume_payload() -> dict:
+        return {
+            "version": 1,
+            "agent": agent.training_state(),
+            "buffer": buffer.state_dict(),
+            "vec_env": vec_env.get_state(),
+            "eval_env": eval_env.get_state(),
+            "rng": {
+                "numpy": np.random.get_state(),
+                "torch": torch.get_rng_state(),
+                "cuda": torch.cuda.get_rng_state_all() if device == "cuda" else None,
+            },
+            "counters": {
+                "env_steps": env_steps,
+                "grad_updates": grad_updates,
+                "next_eval_step": next_eval_step,
+                "best_score": best_score,
+                "elapsed_sec": elapsed_before + time.perf_counter() - t_start,
+            },
+            "history": history,
+            "last_metrics": last_metrics,
+        }
+
+    # Ctrl+C / SIGTERM: finish the current step, save the resume state and exit (press twice to abort hard)
+    stop_signal = {"requested": False}
+
+    def request_stop(signum: int, frame: object) -> None:
+        if stop_signal["requested"]:
+            raise KeyboardInterrupt
+        stop_signal["requested"] = True
+        print("\n[Signal] Stopping after the current step and saving the resume state (press again to abort)", flush=True)
+
+    signal.signal(signal.SIGINT, request_stop)
+    signal.signal(signal.SIGTERM, request_stop)
+
+    t_start = time.perf_counter()
+    stop_reason = "completed"
     print(
         f"[Train] Starting SAC | total_steps={args.total_steps:,} | "
-        f"batch_size={args.batch_size} | updates_per_rollout={args.updates_per_rollout}"
+        f"batch_size={args.batch_size} | updates_per_rollout={args.updates_per_rollout} | early stop: "
+        + (f"mean SR(2mm) of last {args.early_stop_window} evals >= {args.early_stop_sr}%"
+           if args.early_stop_window > 0 else "SR off")
+        + " / "
+        + (f"plateau {args.plateau_patience} evals" if args.plateau_patience > 0 else "plateau off")
     )
 
     while env_steps < args.total_steps:
+        if stop_signal["requested"]:
+            stop_reason = "interrupted"
+            break
         if env_steps < args.warmup_steps:
             actions = np.random.uniform(-1.0, 1.0, size=(args.num_envs, act_size)).astype(np.float32)
         else:
@@ -325,8 +462,10 @@ def main() -> None:
             cur_lr = sac_cfg.actor_lr
 
         if env_steps >= next_eval_step or env_steps >= args.total_steps:
-            eval_stats = evaluate_policy(agent, eval_env, num_episodes=args.eval_episodes)
-            elapsed = time.perf_counter() - t_start
+            eval_stats, _ = evaluate_solver(eval_solver, eval_targets, num_restarts=1, max_steps=args.eval_max_steps)
+            parked = evaluate_parked(agent, eval_env, num_episodes=args.eval_episodes)
+            eval_stats.update({f"parked_{k}": v for k, v in parked.items() if k != "horizon"})
+            elapsed = elapsed_before + time.perf_counter() - t_start
             sps = env_steps / max(elapsed, 1e-6)
 
             record = {
@@ -346,18 +485,13 @@ def main() -> None:
                 f"PosErr: {eval_stats['mean_pos_err_mm']:5.2f}mm (med {eval_stats['median_pos_err_mm']:4.2f}mm) | "
                 f"RotErr: {eval_stats['mean_rot_err_deg']:4.2f}° (med {eval_stats['median_rot_err_deg']:4.2f}°) | "
                 f"Steps: {eval_stats['mean_steps']:4.1f} | "
+                f"parked SR(2mm): {eval_stats['parked_success_rate_2mm']:5.1f}% | "
                 f"α: {last_metrics['alpha']:.4f} | "
                 f"SPS: {sps:,.0f} | t={elapsed:.1f}s",
                 flush=True,
             )
 
-            # Prioritize highest 5mm & 2mm success rates, breaking ties by median error
-            score = (
-                -10.0 * eval_stats["success_rate_5mm"]
-                - 5.0 * eval_stats["success_rate_2mm"]
-                + eval_stats["median_pos_err_mm"]
-                + eval_stats["median_rot_err_deg"]
-            )
+            score = eval_score(eval_stats)
             meta = {
                 "robot": robot.name,
                 "robot_spec": robot.to_dict(),
@@ -376,10 +510,24 @@ def main() -> None:
 
             next_eval_step += args.eval_interval
 
-    total_time = time.perf_counter() - t_start
-    print(f"\n[Done] Training completed in {total_time:.1f}s! Best checkpoint saved to {ckpt_dir / 'best_model.pt'}")
+            reason = early_stop_reason(history, args)
+            if reason:
+                stop_reason = "early_stop"
+                print(f"[EarlyStop] {reason} at env step {env_steps:,}", flush=True)
+                break
+
+        if args.resume_interval > 0 and env_steps >= next_resume_save:
+            save_resume_state(resume_path, resume_payload())
+            next_resume_save += args.resume_interval
+
+    save_resume_state(resume_path, resume_payload())
+    write_run_config(result={"stop_reason": stop_reason, "env_steps": env_steps, "grad_updates": grad_updates})
+    total_time = elapsed_before + time.perf_counter() - t_start
+    print(
+        f"\n[Done] Training {stop_reason} at env step {env_steps:,} in {total_time:.1f}s. "
+        f"Best checkpoint: {ckpt_dir / 'best_model.pt'} | resume state: {resume_path}"
+    )
 
 
 if __name__ == "__main__":
     main()
-

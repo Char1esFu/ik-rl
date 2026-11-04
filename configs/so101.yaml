@@ -27,17 +27,23 @@ ee_quat: [0.0, 1.0, 0.0, 0.0]
 # all joints >= 0.6 rad from their limits.
 home_q: [0.0, -0.6, 0.6, 0.8, 0.0]
 
-# Joint box: positive shoulder_lift / elbow_flex / wrist_flex pitch the arm down.
-#   shoulder_pan  [-1.5, 1.5]    +-86 deg (joint limit +-110 deg), keeps targets in front of the base
-#   shoulder_lift [-1.2, 0.5]    > 0.5 drives the arm into the floor, < -1.2 swings it back over the base
-#   elbow_flex, wrist_flex, wrist_roll: full joint range
-# ~13% of samples collide (mostly gripper / forearm vs floor); ~47% are accepted as targets.
-sample_q_low: [-1.5, -1.2, -1.69, -1.658063, -2.7438473]
-sample_q_high: [1.5, 0.5, 1.69, 1.658063, 2.8412063]
+# Joint box: physical joint limits minus a 0.25 rad margin ("soft limits"). Positive shoulder_lift /
+# elbow_flex / wrist_flex pitch the arm down.
+# Physical limits: low [-1.9199, -1.7453, -1.69, -1.6581, -2.7438], high [1.9199, 1.7453, 1.69, 1.6581, 2.8412]
+# Reachable workspace (sampled): the base only turns +-96 deg, so the region behind the robot (x < 0) is
+# reached only by tipping the upper arm back over the top (shoulder_lift < ~-1.2), which turns the arm plane
+# around. Targets behind are therefore closer (radius p95 ~0.33 m vs ~0.43 m in front) and higher
+# (z >= ~0.05 m); x reaches -0.33 m behind vs +0.48 m in front. ~23% of targets have |azimuth| > 90 deg,
+# some lie right above the base-yaw axis (azimuth undefined, near-singular).
+# ~30% of samples collide (96% of them with the floor) and are rejected.
+sample_q_low: [-1.6699, -1.4953, -1.44, -1.4081, -2.4938]
+sample_q_high: [1.6699, 1.4953, 1.44, 1.4081, 2.5912]
 
-workspace_low: [0.08, -0.35, 0.03]
-workspace_high: [0.45, 0.35, 0.45]
-start_pos_min: [0.03, -.inf, 0.03]
+# Whole reach around the base, above the floor (cuts off only the fully stretched rim)
+workspace_low: [-0.35, -0.42, 0.03]
+workspace_high: [0.45, 0.42, 0.5]
+# Start configurations may lie anywhere around the base (TCP above 3 cm)
+start_pos_min: [-.inf, -.inf, 0.03]
 
 camera_lookat: [0.17, 0.0, 0.2]
 camera_distance: 0.95

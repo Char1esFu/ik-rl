@@ -9,10 +9,10 @@ import mujoco
 import numpy as np
 
 from ik_rl.config import IKConfig
-from ik_rl.env import RobotKinematics, action_to_delta_q
-from ik_rl.math_utils import quat_to_rotmat, rotmat_to_quat, so3_error_vec
-from ik_rl.obs import compute_obs_batch
+from ik_rl.env import RobotKinematics
+from ik_rl.math_utils import quat_to_rotmat, rotmat_to_quat
 from ik_rl.robot import DEFAULT_ROBOT, RobotSpec, get_robot
+from ik_rl.rollout import rollout_groups
 from ik_rl.sac import SACAgent
 
 
@@ -52,17 +52,24 @@ class SACIKSolver:
         env_cfg: IKConfig | None = None,
         device: str = "cuda",
     ) -> None:
-        self.agent, meta = SACAgent.load(checkpoint_path, device=device)
+        agent, meta = SACAgent.load(checkpoint_path, device=device)
         if robot is None:
             robot = checkpoint_robot(meta)
-        self.robot = get_robot(robot) if isinstance(robot, str) else robot
-        if env_cfg is not None:
-            self.cfg = env_cfg
-        elif "env_config" in meta:
-            self.cfg = IKConfig.from_dict(meta["env_config"])
-        else:
-            self.cfg = IKConfig.for_robot(self.robot)
+        if env_cfg is None:
+            env_cfg = IKConfig.from_dict(meta["env_config"]) if "env_config" in meta else None
+        self._setup(agent, robot, env_cfg)
 
+    @classmethod
+    def from_agent(cls, agent: SACAgent, robot: RobotSpec | str, env_cfg: IKConfig | None = None) -> SACIKSolver:
+        """Solver around an in-memory agent (e.g. during training; it sees the agent's live weights)."""
+        solver = cls.__new__(cls)
+        solver._setup(agent, robot, env_cfg)
+        return solver
+
+    def _setup(self, agent: SACAgent, robot: RobotSpec | str, env_cfg: IKConfig | None) -> None:
+        self.agent = agent
+        self.robot = get_robot(robot) if isinstance(robot, str) else robot
+        self.cfg = env_cfg if env_cfg is not None else IKConfig.for_robot(self.robot)
         self.kin = RobotKinematics(self.robot)
         expected = self.cfg.obs_dim(self.kin.n)
         if self.agent.cfg.obs_dim != expected:
@@ -79,36 +86,11 @@ class SACIKSolver:
     def forward_kinematics(self, q: np.ndarray) -> tuple[np.ndarray, np.ndarray, np.ndarray, bool]:
         return self.kin.fk(self.data, q)
 
-    def solve(
-        self,
-        target_pos: np.ndarray,
-        target_quat: np.ndarray | None = None,
-        target_rot: np.ndarray | None = None,
-        q_init: np.ndarray | None = None,
-        max_steps: int = 80,
-        pos_tol: float = 0.005,
-        rot_tol: float = 0.05,
-        num_restarts: int = 1,
-    ) -> IKSolution:
-        """Solve 6D IK for (target_pos, target_quat [w,x,y,z] or target_rot [3,3])."""
-        p_goal = np.asarray(target_pos, dtype=np.float32).reshape(3)
-        if target_rot is not None:
-            R_goal = np.asarray(target_rot, dtype=np.float32).reshape(3, 3)
-        elif target_quat is not None:
-            R_goal = quat_to_rotmat(np.asarray(target_quat, dtype=np.float32).reshape(4))
-        else:
-            raise ValueError("Must provide either target_quat [w,x,y,z] or target_rot [3,3].")
-
+    def start_configs(self, q_init: np.ndarray | None, num_restarts: int) -> np.ndarray:
+        """Start configurations (k, n): q_init (if given), the home pose, then random collision-free ones."""
         kin = self.kin
-        n = kin.n
         k = max(1, int(num_restarts))
-        qs = np.zeros((k, n), dtype=np.float32)
-        ps = np.zeros((k, 3), dtype=np.float32)
-        Rs = np.zeros((k, 3, 3), dtype=np.float32)
-        Js = np.zeros((k, 6, n), dtype=np.float32)
-        prev_acts = np.zeros((k, n), dtype=np.float32)
-        prev_cols = np.zeros(k, dtype=bool)
-
+        qs = np.zeros((k, kin.n), dtype=np.float32)
         for i in range(k):
             if i == 0 and q_init is not None:
                 q0 = np.clip(np.asarray(q_init, dtype=np.float32), self.q_min, self.q_max)
@@ -123,73 +105,74 @@ class SACIKSolver:
                         break
                 else:
                     q0 = kin.home_q.copy()
-            p0, R0, J0, _ = self.forward_kinematics(q0)
-            qs[i], ps[i], Rs[i], Js[i] = q0, p0, R0, J0
+            qs[i] = q0
+        return qs
 
-        p_goals = np.broadcast_to(p_goal[None], (k, 3)).copy()
-        R_goals = np.broadcast_to(R_goal[None], (k, 3, 3)).copy()
+    @staticmethod
+    def _target_rot(target_quat: np.ndarray | None, target_rot: np.ndarray | None, count: int) -> np.ndarray:
+        if target_rot is not None:
+            return np.asarray(target_rot, dtype=np.float32).reshape(count, 3, 3)
+        if target_quat is not None:
+            quats = np.asarray(target_quat, dtype=np.float32).reshape(count, 4)
+            return np.stack([quat_to_rotmat(qt) for qt in quats])
+        raise ValueError("Must provide either target_quat [w,x,y,z] or target_rot [3,3].")
 
-        best_q = qs[0].copy()
-        best_p = ps[0].copy()
-        best_R = Rs[0].copy()
-        best_pos_err = float(np.linalg.norm(p_goal - best_p))
-        _, rot_arr = so3_error_vec(best_R[None], R_goal[None])
-        best_rot_err = float(rot_arr[0])
-        best_score = best_pos_err + 0.2 * best_rot_err
-        steps_used = 0
+    def solve(
+        self,
+        target_pos: np.ndarray,
+        target_quat: np.ndarray | None = None,
+        target_rot: np.ndarray | None = None,
+        q_init: np.ndarray | None = None,
+        max_steps: int = 80,
+        pos_tol: float = 0.005,
+        rot_tol: float = 0.05,
+        num_restarts: int = 1,
+    ) -> IKSolution:
+        """Solve 6D IK for (target_pos, target_quat [w,x,y,z] or target_rot [3,3])."""
+        return self.solve_batch(
+            np.asarray(target_pos, dtype=np.float32).reshape(1, 3),
+            target_quat=None if target_quat is None else np.asarray(target_quat).reshape(1, 4),
+            target_rot=None if target_rot is None else np.asarray(target_rot).reshape(1, 3, 3),
+            q_init=None if q_init is None else np.asarray(q_init).reshape(1, -1),
+            max_steps=max_steps,
+            pos_tol=pos_tol,
+            rot_tol=rot_tol,
+            num_restarts=num_restarts,
+        )[0]
 
-        for step in range(1, max_steps + 1):
-            d_pos = np.linalg.norm(p_goals - ps, axis=-1)
-            _, d_rot = so3_error_vec(Rs, R_goals)
-            scores = d_pos + 0.2 * d_rot
-            min_idx = int(np.argmin(scores))
-            if scores[min_idx] < best_score:
-                best_score = float(scores[min_idx])
-                best_q = qs[min_idx].copy()
-                best_p = ps[min_idx].copy()
-                best_R = Rs[min_idx].copy()
-                best_pos_err = float(d_pos[min_idx])
-                best_rot_err = float(d_rot[min_idx])
-                steps_used = step - 1
+    def solve_batch(
+        self,
+        target_pos: np.ndarray,
+        target_quat: np.ndarray | None = None,
+        target_rot: np.ndarray | None = None,
+        q_init: np.ndarray | None = None,
+        max_steps: int = 80,
+        pos_tol: float = 0.005,
+        rot_tol: float = 0.05,
+        num_restarts: int = 1,
+    ) -> list[IKSolution]:
+        """Solve N targets at once: target_pos (N, 3), target_quat (N, 4) or target_rot (N, 3, 3), q_init (N, n).
 
-            if (best_pos_err < pos_tol) and (best_rot_err < rot_tol):
-                break
-
-            obs = compute_obs_batch(
-                qs, ps, Rs, Js, prev_acts, prev_cols, p_goals, R_goals, self.q_min, self.q_max, self.cfg.obs_features
-            )
-            acts = self.agent.select_action(obs, deterministic=True)
-            dqs = action_to_delta_q(acts, ps, Rs, p_goals, R_goals, self.cfg)
-            q_cands = np.clip(qs + dqs, self.q_min, self.q_max)
-
-            cols = np.zeros(k, dtype=bool)
-            for i in range(k):
-                p_c, R_c, J_c, col = self.forward_kinematics(q_cands[i])
-                if not col:
-                    qs[i], ps[i], Rs[i], Js[i] = q_cands[i], p_c, R_c, J_c
-                else:
-                    cols[i] = True
-            prev_acts = acts.copy()
-            prev_cols = cols
-
-        d_pos = np.linalg.norm(p_goals - ps, axis=-1)
-        _, d_rot = so3_error_vec(Rs, R_goals)
-        scores = d_pos + 0.2 * d_rot
-        min_idx = int(np.argmin(scores))
-        if scores[min_idx] < best_score:
-            best_q = qs[min_idx].copy()
-            best_p = ps[min_idx].copy()
-            best_R = Rs[min_idx].copy()
-            best_pos_err = float(d_pos[min_idx])
-            best_rot_err = float(d_rot[min_idx])
-            steps_used = max_steps
-
-        return IKSolution(
-            qpos=best_q,
-            ee_pos=best_p,
-            ee_quat=rotmat_to_quat(best_R),
-            pos_err_m=best_pos_err,
-            rot_err_rad=best_rot_err,
-            steps=steps_used,
-            success=(best_pos_err < pos_tol) and (best_rot_err < rot_tol),
+        All N x num_restarts branches run as one GPU batch; each target stops when it is solved. Start
+        configurations are generated per target in order, so random restarts match N calls of solve().
+        """
+        p_goal = np.asarray(target_pos, dtype=np.float32).reshape(-1, 3)
+        count = p_goal.shape[0]
+        R_goal = self._target_rot(target_quat, target_rot, count)
+        q_inits = [None] * count if q_init is None else list(np.asarray(q_init, dtype=np.float32).reshape(count, -1))
+        q_start = np.stack([self.start_configs(qi, num_restarts) for qi in q_inits])
+        res = rollout_groups(
+            self.agent, self.kin, self.data, self.cfg, q_start, p_goal, R_goal, max_steps, pos_tol, rot_tol
         )
+        return [
+            IKSolution(
+                qpos=res.q[i],
+                ee_pos=res.p[i],
+                ee_quat=rotmat_to_quat(res.R[i]),
+                pos_err_m=float(res.pos_err[i]),
+                rot_err_rad=float(res.rot_err[i]),
+                steps=int(res.steps[i]),
+                success=bool(res.success[i]),
+            )
+            for i in range(count)
+        ]

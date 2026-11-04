@@ -17,6 +17,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from ik_rl.env import IKEnv
+from ik_rl.evaluation import EvalTargets, evaluate_solver
 from ik_rl.robot import available_robots
 from ik_rl.runs import find_latest_checkpoint, run_outputs_dir
 from ik_rl.solver import SACIKSolver
@@ -37,6 +38,7 @@ def main() -> None:
     parser.add_argument("--max-steps", type=int, default=120, help="Max kinematic steps per solve")
     parser.add_argument("--out-dir", type=str, default=None, help="Default: <run>/outputs of the checkpoint")
     parser.add_argument("--seed", type=int, default=2026)
+    parser.add_argument("--timing-tests", type=int, default=100, help="Targets timed with single solve() calls")
     args = parser.parse_args()
 
     if args.checkpoint is None:
@@ -49,85 +51,62 @@ def main() -> None:
     env = IKEnv(solver.robot, cfg=env_cfg, render_mode="rgb_array", render_width=640, render_height=520)
     rng = np.random.default_rng(args.seed)
 
-    pos_errs_mm: list[float] = []
-    rot_errs_deg: list[float] = []
-    solve_steps: list[int] = []
-    solve_times_ms: list[float] = []
-    succ_5mm: list[bool] = []
-    succ_2mm: list[bool] = []
-
-    gallery_samples: list[tuple[np.ndarray, float, float, int]] = []
-
     print(
         f"[Eval] Benchmarking {args.checkpoint} on {args.num_tests} random 6D poses "
         f"(restarts={args.restarts}, max_steps={args.max_steps})..."
     )
 
-    # Warmup GPU inference
+    # Warmup GPU inference (also keeps the target set identical to earlier versions of this script)
     _, p_warm, R_warm = env.sample_reachable_pose(rng)
     solver.solve(p_warm, target_rot=R_warm, max_steps=10)
 
-    for idx in range(args.num_tests):
-        _, target_pos, target_rot = env.sample_reachable_pose(rng)
-        q_init = env.sample_initial_q(rng)
+    targets = EvalTargets.sample(env, args.num_tests, rng)
+    metrics, solutions = evaluate_solver(solver, targets, num_restarts=args.restarts, max_steps=args.max_steps)
 
+    # Latency of single solve() calls (the batched evaluation above solves all targets at once)
+    solve_times_ms: list[float] = []
+    for i in range(min(args.timing_tests, len(targets))):
         t0 = time.perf_counter()
-        sol = solver.solve(
-            target_pos=target_pos,
-            target_rot=target_rot,
-            q_init=q_init,
-            max_steps=args.max_steps,
-            pos_tol=env_cfg.term_pos_tol,
-            rot_tol=env_cfg.term_rot_tol,
-            num_restarts=args.restarts,
+        solver.solve(
+            targets.pos[i], target_rot=targets.rot[i], q_init=targets.q_init[i], max_steps=args.max_steps,
+            pos_tol=env_cfg.term_pos_tol, rot_tol=env_cfg.term_rot_tol, num_restarts=args.restarts,
         )
-        dt_ms = (time.perf_counter() - t0) * 1000.0
+        solve_times_ms.append((time.perf_counter() - t0) * 1000.0)
 
-        pe_mm = sol.pos_err_m * 1000.0
-        re_deg = float(np.degrees(sol.rot_err_rad))
+    gallery_samples: list[tuple[np.ndarray, float, float, int]] = []
+    for idx, sol in enumerate(solutions[:6]):
+        try:
+            env.reset(options={"target_pos": targets.pos[idx], "target_rot": targets.rot[idx], "q_init": sol.qpos})
+            img = env.render(camera_azimuth=130.0 + (idx % 3 - 1) * 20.0, camera_elevation=-22.0)
+            gallery_samples.append((img, sol.pos_err_m * 1000.0, float(np.degrees(sol.rot_err_rad)), sol.steps))
+        except Exception as render_exc:
+            print(f"[Warn] Offscreen render skipped: {render_exc}")
+            break
 
-        pos_errs_mm.append(pe_mm)
-        rot_errs_deg.append(re_deg)
-        solve_steps.append(sol.steps)
-        solve_times_ms.append(dt_ms)
-        succ_5mm.append((sol.pos_err_m < 0.005) and (sol.rot_err_rad < 0.05))
-        succ_2mm.append((sol.pos_err_m < 0.002) and (sol.rot_err_rad < 0.02))
-
-        if idx < 6:
-            try:
-                env.reset(options={"target_pos": target_pos, "target_rot": target_rot, "q_init": sol.qpos})
-                img = env.render(camera_azimuth=130.0 + (idx % 3 - 1) * 20.0, camera_elevation=-22.0)
-                gallery_samples.append((img, pe_mm, re_deg, sol.steps))
-            except Exception as render_exc:
-                if idx == 0:
-                    print(f"[Warn] Offscreen render skipped: {render_exc}")
-
-    pos_arr = np.array(pos_errs_mm)
-    rot_arr = np.array(rot_errs_deg)
-    steps_arr = np.array(solve_steps)
-    time_arr = np.array(solve_times_ms)
-
+    r = lambda x: round(float(x), 3)  # noqa: E731
     summary = {
         "checkpoint": args.checkpoint,
         "robot": solver.robot.name,
         "num_tests": args.num_tests,
         "num_restarts": args.restarts,
-        "success_rate_5mm_2.86deg_pct": round(float(np.mean(succ_5mm) * 100.0), 2),
-        "success_rate_2mm_1.15deg_pct": round(float(np.mean(succ_2mm) * 100.0), 2),
+        "max_steps": args.max_steps,
+        "success_rate_5mm_2.86deg_pct": round(metrics["success_rate_5mm"], 2),
+        "success_rate_2mm_1.15deg_pct": round(metrics["success_rate_2mm"], 2),
         "pos_err_mm": {
-            "mean": round(float(np.mean(pos_arr)), 3),
-            "median": round(float(np.median(pos_arr)), 3),
-            "p95": round(float(np.percentile(pos_arr, 95)), 3),
-            "max": round(float(np.max(pos_arr)), 3),
+            "mean": r(metrics["mean_pos_err_mm"]),
+            "median": r(metrics["median_pos_err_mm"]),
+            "p95": r(metrics["p95_pos_err_mm"]),
+            "max": r(metrics["max_pos_err_mm"]),
         },
         "rot_err_deg": {
-            "mean": round(float(np.mean(rot_arr)), 3),
-            "median": round(float(np.median(rot_arr)), 3),
-            "p95": round(float(np.percentile(rot_arr, 95)), 3),
-            "max": round(float(np.max(rot_arr)), 3),
+            "mean": r(metrics["mean_rot_err_deg"]),
+            "median": r(metrics["median_rot_err_deg"]),
+            "p95": r(metrics["p95_rot_err_deg"]),
+            "max": r(metrics["max_rot_err_deg"]),
         },
-        "mean_steps": round(float(np.mean(steps_arr)), 2),
-        "mean_solve_time_ms": round(float(np.mean(time_arr)), 2),
+        "mean_steps": round(metrics["mean_steps"], 2),
+        "mean_solve_time_ms": round(float(np.mean(solve_times_ms)), 2) if solve_times_ms else None,
+        "solve_time_note": f"single solve() calls on the first {len(solve_times_ms)} targets",
     }
 
     print("\n================ SAC 6D IK Benchmark Summary ================")

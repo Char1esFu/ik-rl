@@ -38,7 +38,7 @@ Then install the dependencies with `uv venv && uv pip install -r pyproject.toml`
 ## Usage
 
 ```bash
-.venv/bin/python train.py --robot ur5e    # train (~12 min on an RTX 4090), writes runs/ur5e/<YYYYmmdd_HHMMSS>/
+.venv/bin/python train.py --robot ur5e    # train (up to 5M steps, early stop), writes runs/ur5e/<YYYYmmdd_HHMMSS>/
 .venv/bin/python eval.py --robot ur5e --restarts 4   # benchmark on random reachable targets
 .venv/bin/python visualize.py --robot ur5e           # interactive 3D viewer (web UI at http://localhost:8080 on headless machines)
 ```
@@ -46,6 +46,7 @@ Then install the dependencies with `uv venv && uv pip install -r pyproject.toml`
 - `--robot` takes a robot name (`configs/<name>.yaml`) or a path to a YAML file; it defaults to `franka` for training. For `eval.py` / `visualize.py` it only selects which runs to search; without it, the newest checkpoint of any robot is used.
 - Each training run writes `config.json`, `checkpoints/` and `outputs/` (curves, eval results) to `runs/<robot>/<YYYYmmdd_HHMMSS>/`; use `--run-name` to choose the folder name.
 - `eval.py` and `visualize.py` take `--checkpoint` to pick a specific model; the robot is read from the checkpoint.
+- Training runs for at most `--total-steps` (default 5M) and stops early when the in-training success rate stays at the `--early-stop-sr` level (default 99.5%, 3 consecutive evaluations; `--early-stop-patience 0` disables it). Ctrl+C stops cleanly; continue an interrupted or finished run with `train.py --resume runs/<robot>/<run>` (optionally with a larger `--total-steps`).
 - Method settings (`IKConfig`: environment / reward / observation, and `SACConfig`) have their defaults in [`ik_rl/config.py`](ik_rl/config.py). For experiments, override them without editing code, either from a YAML file that lists only the changed values (see [`configs/exp/example.yaml`](configs/exp/example.yaml); it can also set train.py options) or on the command line:
   ```bash
   .venv/bin/python train.py --exp configs/exp/example.yaml

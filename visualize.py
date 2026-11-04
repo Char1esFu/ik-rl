@@ -342,12 +342,9 @@ class MultiStartIKTracker:
             s_acts = batch_act[1:]
 
             s_dqs = action_to_delta_q(s_acts, self.s_p, self.s_R, p_goals, R_goals, env.cfg)
-            q_cands = np.clip(self.s_q + s_dqs, env.q_min, env.q_max)
-            for i in range(self.k_shadow):
-                p_c, R_c, J_c, col = self._shadow_fk(q_cands[i])
-                self.s_prev_col[i] = col
-                if not col:
-                    self.s_q[i], self.s_p[i], self.s_R[i], self.s_J[i] = q_cands[i], p_c, R_c, J_c
+            self.s_prev_col[:] = self._kin.apply_joint_step(
+                self._sdata, self.s_q, self.s_p, self.s_R, self.s_J, s_dqs
+            )
             self.s_prev_act[:] = s_acts
             self._record_shadow_progress()
         else:

@@ -6,18 +6,18 @@ Sizes below are given for a robot with $n$ arm joints ($n = 7$ for the Franka Pa
 
 ## Results
 
-500 random reachable target poses (`eval.py`, latest run in `runs/<robot>/`):
+500 random reachable target poses all around each robot, with random start configurations (`eval.py`, solver stops at 2 mm / 0.02 rad, at most 120 steps; latest run in `runs/<robot>/`). Solve time: single `solve()` calls on an RTX 4090.
 
 | Robot | Restarts | Success (< 5 mm & < 2.86°) | Success (< 2 mm & < 1.15°) | Mean steps | Mean solve time |
 |---|---|---|---|---|---|
-| Franka Panda | 1 | 98.4% | 98.2% | 17.2 | 4.7 ms |
-| Franka Panda | 4 | 100.0% | 100.0% | 12.2 | 4.0 ms |
-| UR5e | 1 | 92.0% | 91.2% | 25.5 | 7.9 ms |
-| UR5e | 4 | 99.6% | 99.4% | 18.1 | 5.6 ms |
-| SO-ARM101 | 1 | 99.8% | 99.8% | 16.0 | 3.9 ms |
-| SO-ARM101 | 4 | 100.0% | 100.0% | 11.3 | 3.5 ms |
+| Franka Panda | 1 | 94.8% | 93.8% | 22.8 | 8.2 ms |
+| Franka Panda | 4 | 99.4% | 99.2% | 15.0 | 5.8 ms |
+| UR5e | 1 | 88.2% | 85.6% | 29.3 | 13.3 ms |
+| UR5e | 4 | 99.4% | 99.2% | 20.5 | 8.2 ms |
+| SO-ARM101 | 1 | 99.4% | 99.0% | 15.7 | 4.7 ms |
+| SO-ARM101 | 4 | 99.8% | 99.8% | 11.2 | 4.5 ms |
 
-The UR5e is non-redundant (up to 8 discrete IK solutions per pose), so a single rollout more often converges to a branch that cannot reach the target; multi-start solving compensates.
+Single-start failures are mostly local minima far from the target (not step-limit or near misses); multi-start solving (one GPU batch) recovers almost all of them. The UR5e is non-redundant (up to 8 discrete IK solutions per pose) and its joints turn +-2 pi; targets and starts are sampled within one turn, because "wound-up" start configurations near +-2 pi got pinned at joint limits (single-start 77% with a +-2 pi sampling box). Its remaining single-start failures are partly collision-blocked paths.
 
 The SO-ARM101 has only 5 joints, so not every 6D pose is reachable: the gripper's approach direction must lie in the vertical plane through the shoulder-pan axis and the TCP. Evaluation targets are forward kinematics of sampled joint configurations and are therefore reachable; for arbitrary user-specified poses (viewer sliders, *Point Down*) the policy reaches the closest pose it can. The same reward and hyperparameters as for the other robots are used (no `env_overrides`).
 
@@ -28,10 +28,12 @@ The SO-ARM101 has only 5 joints, so not every 6D pose is reachable: the gripper'
 | `robot.py` | `RobotSpec`, loaded from `configs/<robot>.yaml` |
 | `config.py` | `IKConfig` (environment / action / reward / observation choice), `SACConfig`, experiment overrides |
 | `obs.py` | `OBS_FEATURES` and the observation builder `compute_obs_batch` |
-| `env.py` | `RobotKinematics` (FK / Jacobian / collision), `IKEnv`, `VectorIKEnv`, action scaling and reward |
+| `env.py` | `RobotKinematics` (FK / Jacobian / collision, `apply_joint_step`), `IKEnv`, `VectorIKEnv`, action scaling and reward |
 | `sac.py` | SAC agent (actor, twin critics, entropy tuning) |
 | `replay_buffer.py` | GPU replay buffer |
-| `solver.py` | `SACIKSolver` inference API |
+| `rollout.py` | batched policy rollout (`rollout_groups`): N targets x k start branches in one GPU batch |
+| `solver.py` | `SACIKSolver` inference API (`solve`, `solve_batch`), built on `rollout.py` |
+| `evaluation.py` | evaluation protocol shared by training, `eval.py` and comparison scripts |
 | `math_utils.py` | rotation utilities |
 | `runs.py` | locate checkpoints in `runs/<robot>/` |
 
@@ -40,7 +42,7 @@ The SO-ARM101 has only 5 joints, so not every 6D pose is reachable: the gripper'
 Robot-specific values come from `configs/<robot>.yaml`; see the comments there.
 
 - **Model and TCP**: the menagerie MJCF scene with a TCP site added to `ee_body` at `ee_offset` / `ee_quat` (Franka: `hand` + 0.1034 m, fingers fixed open; UR5e: tool flange on `wrist_3_link`).
-- **Targets**: joint configurations are sampled uniformly from the `sample_q_low` / `sample_q_high` box; the resulting TCP pose is accepted as a target if the configuration is collision-free and the TCP lies in the `workspace_low` / `workspace_high` box. Every target is therefore reachable.
+- **Targets**: joint configurations are sampled uniformly from the `sample_q_low` / `sample_q_high` box; the resulting TCP pose is accepted as a target if the configuration is collision-free and the TCP lies in the `workspace_low` / `workspace_high` box. Every target is therefore reachable. For all robots the box is the physical joint range minus a 0.25 rad margin ("soft limits", as on a real controller), so targets surround the robot instead of covering only the region in front of it. Sampling right up to the hard limits was tested on the Franka and lowered single-start success, mostly for targets with a joint near its limit. No special handling of the base-joint seam (e.g. Franka's ±166°) is needed: the policy learns which way to turn, and targets behind the robot are solved as reliably as those in front.
 - **Start configurations** (training): 25% home pose + $\mathcal{N}(0, 0.25^2)$ joint noise, 30% continue from the previous episode's final configuration, otherwise uniform from the joint box; all collision-free.
 - **Collisions**: each candidate configuration is checked with `mj_collision` (self and ground). Colliding moves are rejected and the arm stays in place.
 - **Episodes**: fixed horizon of 65 steps without termination; the critic bootstraps at truncation, so the policy learns to reach the target and then hold still.
@@ -121,7 +123,9 @@ All weights are fields of `IKConfig` ([`config.py`](config.py)). Override them p
 | Batch size / replay buffer | 1024 / $2 \times 10^6$ (stored on GPU) |
 | Gradient clipping | critic 10, actor 5 |
 
-Training uses 64 vectorized environments for $1.6 \times 10^6$ environment steps (16k random warm-up steps, 6 gradient updates per vectorized step). Every 80k steps the deterministic policy is evaluated on 200 episodes, and `best_model.pt` is selected by the score $-10 \cdot SR_{5mm} - 5 \cdot SR_{2mm} + \text{median } d_{pos} [\text{mm}] + \text{median } d_{rot} [°]$ (lower is better).
+Training uses 64 vectorized environments for at most $5 \times 10^6$ environment steps (16k random warm-up steps, 6 gradient updates per vectorized step; the cosine learning-rate schedule spans the full budget). Every 80k steps the policy is evaluated with the same protocol as `eval.py` (`ik_rl/evaluation.py`): 500 fixed targets with fixed start configurations, solved by `SACIKSolver` with one start (stop at 2 mm / 0.02 rad, at most 120 steps), so the training curves are directly comparable to the results above. `best_model.pt` is selected by the score $-10 \cdot SR_{5mm} - 5 \cdot SR_{2mm} + \text{median } d_{pos} [\text{mm}] + \text{median } d_{rot} [°]$ (lower is better). The fixed-horizon (65-step, "parked") success rate in the training environment is logged as well (`parked_*`). Training stops early when either the mean 2 mm success rate of the last 5 evaluations is $\ge 98.5\%$ (`--early-stop-sr`, `--early-stop-window`) or the best-model score has not improved for 15 evaluations (`--plateau-patience`).
+
+The full training state (networks, optimizers, replay buffer, environment and RNG states) is written to `checkpoints/resume_state.pt` every $10^6$ steps, at the end and on Ctrl+C; `train.py --resume <run_dir>` continues a run exactly (an interrupted and resumed run reproduces an uninterrupted one bit for bit). `resume_state.pt` is large (up to ~2 GB) and not tracked by git.
 
 ## Solver
 

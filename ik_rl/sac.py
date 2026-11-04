@@ -228,6 +228,28 @@ class SACAgent:
             "entropy": float(-log_prob_det.mean().item()),
         }
 
+    def training_state(self) -> dict[str, Any]:
+        """Networks, entropy temperature and optimizer states (for resuming training)."""
+        return {
+            "actor": self.actor.state_dict(),
+            "critic": self.critic.state_dict(),
+            "critic_target": self.critic_target.state_dict(),
+            "log_alpha": self.log_alpha.detach().clone(),
+            "actor_opt": self.actor_opt.state_dict(),
+            "critic_opt": self.critic_opt.state_dict(),
+            "alpha_opt": self.alpha_opt.state_dict(),
+        }
+
+    def load_training_state(self, state: dict[str, Any]) -> None:
+        self.actor.load_state_dict(state["actor"])
+        self.critic.load_state_dict(state["critic"])
+        self.critic_target.load_state_dict(state["critic_target"])
+        with torch.no_grad():
+            self.log_alpha.copy_(state["log_alpha"].to(self.device))
+        self.actor_opt.load_state_dict(state["actor_opt"])
+        self.critic_opt.load_state_dict(state["critic_opt"])
+        self.alpha_opt.load_state_dict(state["alpha_opt"])
+
     def save(self, path: str | Path, extra_meta: dict[str, Any] | None = None) -> None:
         ckpt_path = Path(path)
         ckpt_path.parent.mkdir(parents=True, exist_ok=True)

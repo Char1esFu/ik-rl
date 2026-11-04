@@ -19,12 +19,19 @@ ee_offset: [0.0, 0.0, 0.1034]
 
 home_q: [0.0, 0.0, 0.0, -1.57079, 0.0, 1.57079, -0.7853]
 
-# Joint box for sampling targets and start configurations
-# (forward manipulation region, avoids the behind-the-back +-166 deg seam)
-sample_q_low: [-1.50, -1.35, -1.50, -2.85, -2.20, 0.35, -2.20]
-sample_q_high: [1.50, 1.35, 1.50, -0.35, 2.20, 3.20, 2.20]
+# Joint box for sampling targets and start configurations: physical joint limits minus a 0.25 rad margin
+# ("soft limits", like a real controller). Base +-152 deg, so targets surround the robot, including the
+# region behind it and around the +-166 deg base seam (the policy learns which way to turn).
+# Physical limits: low [-2.8973, -1.7628, -2.8973, -3.0718, -2.8973, -0.0175, -2.8973]
+#                  high [2.8973, 1.7628, 2.8973, -0.0698, 2.8973, 3.7525, 2.8973]
+# ~8% of samples collide (mostly with the floor); ~89% are accepted as targets.
+sample_q_low: [-2.6473, -1.5128, -2.6473, -2.8218, -2.6473, 0.2325, -2.6473]
+sample_q_high: [2.6473, 1.5128, 2.6473, -0.3198, 2.6473, 3.5025, 2.6473]
 
-# A sampled target is accepted if its TCP lies in this box (and the configuration is collision-free)
-workspace_low: [0.15, -0.55, 0.08]
-workspace_high: [0.85, 0.55, 0.78]
+# A sampled target is accepted if its TCP lies in this box (and the configuration is collision-free):
+# the whole reach around the base (TCP radius <= ~0.94 m), above the floor
+workspace_low: [-0.9, -0.9, 0.08]
+workspace_high: [0.9, 0.9, 1.2]
+# Start configurations may lie anywhere around the base (TCP above 5 cm)
+start_pos_min: [-.inf, -.inf, 0.05]
 

@@ -137,6 +137,36 @@ class RobotKinematics:
         jac = np.vstack([self._jacp[:, self.arm_dadr], self._jacr[:, self.arm_dadr]]).astype(np.float32)
         return pos, rot, jac, bool(data.ncon > 0)
 
+    def apply_joint_step(
+        self,
+        data: mujoco.MjData | list[mujoco.MjData],
+        q: np.ndarray,
+        p: np.ndarray,
+        R: np.ndarray,
+        J: np.ndarray,
+        dq: np.ndarray,
+        restore_on_collision: bool = False,
+    ) -> np.ndarray:
+        """One kinematic step for a batch: q <- clip(q + dq) unless the new configuration collides.
+
+        Shared by IKEnv, VectorIKEnv, the solver rollout and the viewer. q (B, n), p (B, 3), R (B, 3, 3) and
+        J (B, 6, n) are updated in place; rows whose candidate collides stay where they are. `data` is one
+        MjData (reused for every row) or one per row. With restore_on_collision, a colliding row's MjData is
+        recomputed at its current q (keeps MjData consistent for rendering). Returns the collided mask (B,).
+        """
+        q_cands = np.clip(q + dq, self.q_min, self.q_max)
+        collided = np.zeros(q.shape[0], dtype=bool)
+        for i in range(q.shape[0]):
+            d = data[i] if isinstance(data, (list, tuple)) else data
+            pos, rot, jac, col = self.fk(d, q_cands[i])
+            if not col:
+                q[i], p[i], R[i], J[i] = q_cands[i], pos, rot, jac
+            else:
+                collided[i] = True
+                if restore_on_collision:
+                    self.fk(d, q[i])
+        return collided
+
     def in_workspace(self, pos: np.ndarray) -> bool:
         return bool(np.all(self.ws_low <= pos) and np.all(pos <= self.ws_high))
 
@@ -371,16 +401,12 @@ class IKEnv(gym.Env):
             self.R_goal[None],
             self.cfg,
         )[0]
-        q_cand = np.clip(self.q_cur + dq, self.q_min, self.q_max)
-
-        pos_cand, rot_cand, jac_cand, collided = self._fk_jac_collision(q_cand)
-        if not collided:
-            self.q_cur = q_cand
-            self.p_cur = pos_cand
-            self.R_cur = rot_cand
-            self.J_cur = jac_cand
-        else:
-            self._fk_jac_collision(self.q_cur)
+        collided = bool(
+            self.kin.apply_joint_step(
+                self.data, self.q_cur[None], self.p_cur[None], self.R_cur[None], self.J_cur[None], dq[None],
+                restore_on_collision=True,
+            )[0]
+        )
 
         self.prev_action = act.copy()
         self.prev_collided = collided
@@ -555,6 +581,26 @@ class VectorIKEnv:
             self._reset_single(i, force_fresh_q=True)
         return self._obs()
 
+    _STATE_ARRAYS = (
+        "q_cur", "p_cur", "R_cur", "J_cur", "prev_action", "prev_collided",
+        "p_goal", "R_goal", "step_counts", "_initialized",
+    )
+
+    def get_state(self) -> dict[str, Any]:
+        """Episode state of all envs plus the RNG (for resuming training). MjData is recomputed by FK each step."""
+        state = {k: getattr(self, k).copy() for k in self._STATE_ARRAYS}
+        state["rng"] = self.rng.bit_generator.state
+        return state
+
+    def set_state(self, state: dict[str, Any]) -> np.ndarray:
+        """Restore get_state() output; returns the current observation."""
+        for k in self._STATE_ARRAYS:
+            if state[k].shape != getattr(self, k).shape:
+                raise ValueError(f"VectorIKEnv state '{k}' has shape {state[k].shape}, expected {getattr(self, k).shape}")
+            getattr(self, k)[...] = state[k]
+        self.rng.bit_generator.state = state["rng"]
+        return self._obs()
+
     def step(
         self, actions: np.ndarray
     ) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, dict[str, Any]]:
@@ -565,19 +611,9 @@ class VectorIKEnv:
         cur_R_goal = self.R_goal.copy()
 
         dqs = action_to_delta_q(acts, self.p_cur, self.R_cur, cur_p_goal, cur_R_goal, self.cfg)
-        q_cands = np.clip(self.q_cur + dqs, self.q_min, self.q_max)
-
-        collided = np.zeros(self.num_envs, dtype=bool)
-        for i in range(self.num_envs):
-            pos, rot, jac, col = self._fk_jac_check_single(i, q_cands[i])
-            if not col:
-                self.q_cur[i] = q_cands[i]
-                self.p_cur[i] = pos
-                self.R_cur[i] = rot
-                self.J_cur[i] = jac
-            else:
-                collided[i] = True
-                self._fk_jac_check_single(i, self.q_cur[i])
+        collided = self.kin.apply_joint_step(
+            self.datas, self.q_cur, self.p_cur, self.R_cur, self.J_cur, dqs, restore_on_collision=True
+        )
 
         self.prev_action = acts.copy()
         self.prev_collided = collided.copy()

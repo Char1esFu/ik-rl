@@ -18,8 +18,11 @@ ik_rl/                 # shared, robot-agnostic code
   robot.py             # RobotSpec + get_robot(name | yaml path), available_robots()
   config.py            # IKConfig, SACConfig (all method defaults) + --exp / --set override helpers
   obs.py               # OBS_FEATURES, obs_dim, compute_obs_batch
-  env.py               # RobotKinematics, IKEnv, VectorIKEnv, action scaling, reward
-  sac.py replay_buffer.py solver.py (SACIKSolver) math_utils.py runs.py
+  env.py               # RobotKinematics (fk, apply_joint_step), IKEnv, VectorIKEnv, action scaling, reward
+  rollout.py           # rollout_groups: batched policy rollout, G targets x k branches, per-group early exit
+  solver.py            # SACIKSolver: solve / solve_batch / from_agent, built on rollout.py
+  evaluation.py        # EvalTargets, evaluate_solver (benchmark protocol), evaluate_parked (fixed horizon)
+  sac.py replay_buffer.py math_utils.py runs.py
   README.md            # method details (formulas) + per-robot results
 train.py eval.py visualize.py   # --robot <name|yaml>; runs/<robot>/<YYYYmmdd_HHMMSS>/
 web/viewer.html        # web viewer page (HTML/CSS/JS) served by visualize.py; __PLACEHOLDERS__ filled at startup
@@ -39,6 +42,15 @@ web/viewer.html        # web viewer page (HTML/CSS/JS) served by visualize.py; _
   fixed dims)`); it is a code schema, not a config value. `obs_dim()` is derived from it, never
   hand-written. To add a feature: add a row to `OBS_FEATURES` and a branch in `compute_obs_batch`. Pass `cfg.obs_features` at every `compute_obs_batch` call
   (env x3, solver, `visualize.py` tracker). `train.py --obs-features ...` selects groups.
+- One kinematic step (q += dq, clip, FK + collision, colliding rows stay put) exists once:
+  `RobotKinematics.apply_joint_step`, used by both envs, the rollout and the viewer tracker. The policy
+  loop exists once: `rollout.rollout_groups` (solver single / multi-start, batched evaluation).
+- **One evaluation protocol** (`ik_rl/evaluation.py`): fixed targets + starts, `SACIKSolver`, stop at
+  2 mm / 0.02 rad, max 120 steps. train.py (1 start, 500 targets, curves / best model / early stop),
+  eval.py (1 and 4 starts) and compare_models.py all use it, so their numbers are comparable.
+  Batched solving matches one-at-a-time `solve()` in success (TF32 matmuls make actions differ ~1e-3
+  with batch size, so failing trajectories are not bit-identical); single `solve()` is bit-identical to
+  the pre-refactor solver.
 - Checkpoint meta stores `robot`, `robot_spec` and `env_config` (incl. `obs_features`).
   `checkpoint_robot(meta)` / `IKConfig.from_dict(meta["env_config"])` rebuild the exact setup, so
   solver / eval / viewer must load the robot and config **from the checkpoint**, not from defaults.
@@ -54,10 +66,15 @@ web/viewer.html        # web viewer page (HTML/CSS/JS) served by visualize.py; _
    reachable; training targets are FK samples so that is fine, but the figure-8 needs
    `fig8_radial_yaw: true`, no roll amplitude, and the pan axis is not necessarily at the origin.
    Check a candidate figure-8 with a numerical (damped least squares) IK before training.
-3. Sanity-check before training (one-off script): home pose collision-free; TCP equals any reference
-   site; Jacobian matches finite differences; target acceptance rate of the sampling box is reasonable
-   (UR5e ~17%, SO-101 ~47%); collision rate not dominated by floor hits (tighten the shoulder-lift range
-   if so; on SO-101 the floor still causes most of the remaining ~13% collisions, which is acceptable).
+3. Sampling box = physical joint limits minus 0.25 rad ("soft limits") for every joint; workspace box =
+   whole reach above the floor; `start_pos_min: [-.inf, -.inf, z]`. Analyse the reachable workspace first
+   (target share by azimuth around the base-yaw axis, x < 0 reach, height / radius behind the robot) and
+   document it in the YAML; e.g. SO-101 reaches behind only by tipping the upper arm over the top.
+   Sampling up to the hard limits hurt accuracy (Franka test: targets with a joint < 0.1 rad from a limit
+   73% vs 96% single-start); the base seam itself (Franka +-166 deg) needs no special handling.
+   Sanity-check (one-off script): home pose collision-free and inside the workspace; TCP equals any
+   reference site; Jacobian matches finite differences; acceptance rate (franka ~89%, so101 ~65%,
+   ur5e ~40% because the +-2pi shoulder lift often hits the floor; rejected samples only cost time).
 4. Train (long-running, see below), then `eval.py --robot <name> --restarts 1` and `--restarts 4`;
    put results in `ik_rl/README.md`, add the robot to the root README table and sparse-checkout line.
 
@@ -76,7 +93,16 @@ web/viewer.html        # web viewer page (HTML/CSS/JS) served by visualize.py; _
 
 ## Training and runs
 
-- One run (1.6M steps) takes ~12 min on an RTX 4090 (slower when several run in parallel).
+- Default budget 5M env steps (~29 min for Franka alone on an RTX 4090, slower in parallel) with early
+  stopping: mean solver SR(2mm) of the last 5 evals >= 98.5% (`--early-stop-sr/--early-stop-window`) or no
+  new best model for 15 evals (`--plateau-patience`); both computed from the history, so they survive
+  --resume. Evals use 500 fixed targets (less noise than fresh random targets each time).
+- Resume: `train.py --resume runs/<robot>/<run> [--total-steps N]` loads `checkpoints/resume_state.pt`
+  (written every `--resume-interval` 1M steps, at the end, on early stop and on Ctrl+C / SIGTERM, which
+  finish the current step first). Verified exact: interrupt + resume == uninterrupted, bit for bit.
+  Raising `--total-steps` on resume stretches the cosine LR schedule. `resume_state.pt` (~1.5-2 GB) is
+  git-ignored; `best_model.pt` / `latest_model.pt` stay small and are what solver / eval / viewer load.
+  `config.json` records `resumes` and `result.stop_reason` (completed / early_stop / interrupted).
 - Launch training as a **daemon task** (`IsDaemon: true`), e.g.
   `TS=$(date +%Y%m%d_%H%M%S); mkdir -p runs/<robot>/$TS; exec .venv/bin/python train.py --robot <robot> --run-name $TS > runs/<robot>/$TS/train.log 2>&1`.
   Plain `nohup ... &` inside a normal command gets killed when that command finishes.
@@ -86,9 +112,13 @@ web/viewer.html        # web viewer page (HTML/CSS/JS) served by visualize.py; _
 
 ## Current reference values
 
-- Default-config env fingerprints: franka `943284517ee7d36c`, ur5e `65ec4caf608c5c4a`, so101 `5dbd1cd1d2fcbb97`.
+- Default-config env fingerprints: franka `3a4daf3dd0402c72`, ur5e `c3cff3c0f15473c2`, so101 `b26d03e8a6b635a2`
+  (soft-limit all-around sampling; UR5e one turn).
 - Obs dims (all features): `11n + 35` -> franka 112, ur5e 101, so101 90; without `jacobian` + `jt_direction`: `4n + 35`.
-- Results (eval.py, 500 targets, 2 mm / 1.15 deg, seed 42 runs): franka 98.2% (1 start) / 100% (4 starts);
-  ur5e 91.2% / 99.4%; so101 99.8% / 100% (shared reward, no env_overrides). Training is deterministic: same seed + same code reproduces a run bit for bit
+- Results (eval.py, 500 all-around targets, 2 mm / 1.15 deg, seed 42, 5M budget + early stop):
+  franka 93.8% (1 start) / 99.2% (4 starts); ur5e 85.6% / 99.2%; so101 99.0% / 99.8% (shared reward,
+  no env_overrides). Front-only workspace (earlier) was franka 98.2 / 100, ur5e 91.2 / 99.4, so101 99.8 / 100.
+  UR5e failure analysis: not seam / branch switching; wound-up starts (|q| near 2pi, pinned at limits) and
+  collision-blocked paths -> sample one turn. Training is deterministic: same seed + same code reproduces a run bit for bit
   (verified on ur5e), so a seed-42 retrain is the strongest check that a refactor preserved training. Jacobian features: +0.6 pt single-start, ~1 fewer step (kept).
 

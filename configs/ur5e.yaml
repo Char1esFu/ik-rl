@@ -23,14 +23,21 @@ ee_quat: [-1.0, 1.0, 0.0, 0.0]
 # = [-pi, -pi/2, pi/2, -pi/2, -pi/2, 0]
 home_q: [-3.141592653589793, -1.5707963267948966, 1.5707963267948966, -1.5707963267948966, -1.5707963267948966, 0.0]
 
-# Joint box around the forward-facing home:
-#   shoulder_pan  [-pi - 1.5, -pi + 1.5]   +-86 deg around the forward direction
-#   shoulder_lift [-3.0, -0.15]            keeps the upper arm above the floor
-#   elbow         [-2.8, 2.8]              inside the +-pi joint limit
-#   wrist_1/2/3   [-pi, pi]                one turn (joint limits are +-2pi)
-sample_q_low: [-4.641592653589793, -3.0, -2.8, -3.141592653589793, -3.141592653589793, -3.141592653589793]
-sample_q_high: [-1.6415926535897931, -0.15, 2.8, 3.141592653589793, 3.141592653589793, 3.141592653589793]
+# Joint box for targets / start configurations. Physical limits: +-2pi (two full turns, hollow-shaft UR
+# joints) for all joints except the elbow (+-pi, link self-collision).
+#   elbow: physical limit minus a 0.25 rad margin ("soft limit")
+#   other joints: one turn, [-pi, pi]. A second turn adds no new poses (q and q +- 2pi are the same pose)
+#   but creates "wound-up" start configurations near +-2pi: with the full +-2pi box, single-start success
+#   dropped from 90% (start |q| < 3.2) to 62% (start |q| > 4.7), many failures ending pinned at a limit.
+#   The policy may still move through the full +-2pi range.
+# The shoulder lift covers a full turn, so about half of the samples put the upper arm into the floor:
+# ~58% of samples collide (mostly with the floor) and are rejected, which only costs sampling time.
+sample_q_low: [-3.1416, -3.1416, -2.8916, -3.1416, -3.1416, -3.1416]
+sample_q_high: [3.1416, 3.1416, 2.8916, 3.1416, 3.1416, 3.1416]
 
-workspace_low: [0.15, -0.55, 0.08]
-workspace_high: [0.85, 0.55, 0.78]
+# Whole reach around the base (TCP radius <= ~0.95 m, height <= ~1.12 m), above the floor
+workspace_low: [-0.9, -0.9, 0.08]
+workspace_high: [0.9, 0.9, 1.1]
+# Start configurations may lie anywhere around the base (TCP above 5 cm)
+start_pos_min: [-.inf, -.inf, 0.05]
 

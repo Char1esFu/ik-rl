@@ -73,6 +73,33 @@ class GPUReplayBuffer:
         self.ptr = (self.ptr + n) % self.capacity
         self.size = min(self.size + n, self.capacity)
 
+    def state_dict(self) -> dict:
+        """Filled part of the buffer plus ring pointer (for resuming training)."""
+        n = self.size
+        return {
+            "capacity": self.capacity,
+            "ptr": self.ptr,
+            "size": n,
+            # .cpu() copies only the filled rows (saving a GPU slice would serialize the whole storage)
+            "obs": self.obs[:n].cpu(),
+            "actions": self.actions[:n].cpu(),
+            "rewards": self.rewards[:n].cpu(),
+            "next_obs": self.next_obs[:n].cpu(),
+            "dones": self.dones[:n].cpu(),
+        }
+
+    def load_state_dict(self, state: dict) -> None:
+        if state["capacity"] != self.capacity or state["obs"].shape[1] != self.obs_dim:
+            raise ValueError(
+                f"Replay buffer mismatch: saved capacity {state['capacity']} / obs_dim {state['obs'].shape[1]}, "
+                f"current {self.capacity} / {self.obs_dim}"
+            )
+        n = int(state["size"])
+        for name in ("obs", "actions", "rewards", "next_obs", "dones"):
+            getattr(self, name)[:n] = state[name].to(self.device)
+        self.ptr = int(state["ptr"])
+        self.size = n
+
     def sample(self, batch_size: int) -> tuple[torch.Tensor, ...]:
         idx = torch.randint(0, self.size, (batch_size,), device=self.device)
         return (

@@ -12,3 +12,7 @@ MUJOCO_LOG.TXT
 .vscode/
 .idea/
 .DS_Store
+
+# Full training state for train.py --resume (large; regenerate by training)
+resume_state.pt
+resume_state.tmp

@@ -1,0 +1,71 @@
+[Init] Run directory: runs/so101/20261104_042133
+[Init] Device: cuda (NVIDIA GeForce RTX 4090)
+[Init] Creating 64 vectorized SO-ARM101 MuJoCo envs...
+[Train] Starting SAC | total_steps=5,000,000 | batch_size=1024 | updates_per_rollout=6 | early stop: SR(2mm) >= 99.5% in 3 consecutive evals
+[Step  80,000/5,000,000] SR(5mm):  82.0% | SR(2mm):  66.5% | PosErr: 13.92mm (med 0.71mm) | RotErr: 5.10° (med 0.06°) | Steps: 35.2 | α: 0.0130 | SPS: 2,202 | t=36.3s
+[Step 160,000/5,000,000] SR(5mm):  93.0% | SR(2mm):  88.5% | PosErr:  2.06mm (med 0.20mm) | RotErr: 0.41° (med 0.05°) | Steps: 22.9 | α: 0.0097 | SPS: 1,970 | t=81.2s
+[Step 240,000/5,000,000] SR(5mm):  90.5% | SR(2mm):  88.5% | PosErr:  6.26mm (med 0.24mm) | RotErr: 2.35° (med 0.06°) | Steps: 21.4 | α: 0.0079 | SPS: 1,912 | t=125.5s
+[Step 320,000/5,000,000] SR(5mm):  96.0% | SR(2mm):  95.0% | PosErr:  3.97mm (med 0.22mm) | RotErr: 1.98° (med 0.06°) | Steps: 18.4 | α: 0.0066 | SPS: 1,881 | t=170.1s
+[Step 400,000/5,000,000] SR(5mm):  98.0% | SR(2mm):  96.0% | PosErr:  0.47mm (med 0.21mm) | RotErr: 0.13° (med 0.06°) | Steps: 16.5 | α: 0.0058 | SPS: 1,871 | t=213.8s
+[Step 480,000/5,000,000] SR(5mm):  97.0% | SR(2mm):  95.5% | PosErr:  1.39mm (med 0.17mm) | RotErr: 0.53° (med 0.05°) | Steps: 16.7 | α: 0.0051 | SPS: 1,859 | t=258.2s
+[Step 560,000/5,000,000] SR(5mm):  96.5% | SR(2mm):  95.5% | PosErr:  4.04mm (med 0.16mm) | RotErr: 1.10° (med 0.07°) | Steps: 16.2 | α: 0.0046 | SPS: 1,852 | t=302.3s
+[Step 640,000/5,000,000] SR(5mm):  95.0% | SR(2mm):  95.0% | PosErr:  1.62mm (med 0.14mm) | RotErr: 0.87° (med 0.05°) | Steps: 17.1 | α: 0.0043 | SPS: 1,845 | t=346.9s
+[Step 720,000/5,000,000] SR(5mm):  99.5% | SR(2mm):  99.5% | PosErr:  0.38mm (med 0.15mm) | RotErr: 0.16° (med 0.05°) | Steps: 14.5 | α: 0.0041 | SPS: 1,839 | t=391.6s
+[Step 800,000/5,000,000] SR(5mm):  97.5% | SR(2mm):  97.5% | PosErr:  2.11mm (med 0.13mm) | RotErr: 0.36° (med 0.05°) | Steps: 15.6 | α: 0.0039 | SPS: 1,835 | t=435.9s
+[Step 880,000/5,000,000] SR(5mm):  96.0% | SR(2mm):  95.0% | PosErr:  3.53mm (med 0.15mm) | RotErr: 0.60° (med 0.04°) | Steps: 15.8 | α: 0.0037 | SPS: 1,832 | t=480.2s
+[Step 960,000/5,000,000] SR(5mm):  97.5% | SR(2mm):  97.5% | PosErr:  0.49mm (med 0.14mm) | RotErr: 0.20° (med 0.04°) | Steps: 14.6 | α: 0.0037 | SPS: 1,828 | t=525.3s
+[Step 1,040,000/5,000,000] SR(5mm):  98.5% | SR(2mm):  98.0% | PosErr:  1.17mm (med 0.12mm) | RotErr: 0.43° (med 0.05°) | Steps: 14.6 | α: 0.0036 | SPS: 1,824 | t=570.3s
+[Step 1,120,000/5,000,000] SR(5mm):  97.5% | SR(2mm):  96.5% | PosErr:  0.68mm (med 0.11mm) | RotErr: 0.45° (med 0.04°) | Steps: 15.1 | α: 0.0035 | SPS: 1,821 | t=614.9s
+[Step 1,200,000/5,000,000] SR(5mm):  99.0% | SR(2mm):  99.0% | PosErr:  1.68mm (med 0.12mm) | RotErr: 0.42° (med 0.04°) | Steps: 14.2 | α: 0.0034 | SPS: 1,822 | t=658.5s
+[Step 1,280,000/5,000,000] SR(5mm):  98.0% | SR(2mm):  98.0% | PosErr:  0.80mm (med 0.12mm) | RotErr: 0.28° (med 0.04°) | Steps: 14.4 | α: 0.0033 | SPS: 1,822 | t=702.4s
+[Step 1,360,000/5,000,000] SR(5mm):  99.5% | SR(2mm):  99.5% | PosErr:  0.18mm (med 0.12mm) | RotErr: 0.06° (med 0.04°) | Steps: 13.9 | α: 0.0032 | SPS: 1,823 | t=745.8s
+[Step 1,440,000/5,000,000] SR(5mm):  96.5% | SR(2mm):  96.0% | PosErr:  2.99mm (med 0.13mm) | RotErr: 0.75° (med 0.04°) | Steps: 15.5 | α: 0.0032 | SPS: 1,823 | t=789.9s
+[Step 1,520,000/5,000,000] SR(5mm):  98.5% | SR(2mm):  98.0% | PosErr:  2.47mm (med 0.14mm) | RotErr: 0.27° (med 0.04°) | Steps: 14.2 | α: 0.0032 | SPS: 1,821 | t=834.7s
+[Step 1,600,000/5,000,000] SR(5mm):  99.0% | SR(2mm):  99.0% | PosErr:  0.82mm (med 0.11mm) | RotErr: 0.27° (med 0.03°) | Steps: 13.9 | α: 0.0031 | SPS: 1,821 | t=878.6s
+[Step 1,680,000/5,000,000] SR(5mm):  97.0% | SR(2mm):  96.5% | PosErr:  2.21mm (med 0.12mm) | RotErr: 0.74° (med 0.03°) | Steps: 15.1 | α: 0.0031 | SPS: 1,819 | t=923.4s
+[Step 1,760,000/5,000,000] SR(5mm):  99.0% | SR(2mm):  99.0% | PosErr:  0.38mm (med 0.11mm) | RotErr: 0.12° (med 0.03°) | Steps: 13.8 | α: 0.0030 | SPS: 1,817 | t=968.5s
+[Step 1,840,000/5,000,000] SR(5mm):  99.5% | SR(2mm):  99.0% | PosErr:  0.19mm (med 0.11mm) | RotErr: 0.05° (med 0.03°) | Steps: 14.1 | α: 0.0030 | SPS: 1,818 | t=1012.1s
+[Step 1,920,000/5,000,000] SR(5mm):  98.5% | SR(2mm):  98.5% | PosErr:  0.66mm (med 0.11mm) | RotErr: 0.19° (med 0.03°) | Steps: 13.7 | α: 0.0030 | SPS: 1,818 | t=1056.0s
+[Step 2,000,000/5,000,000] SR(5mm):  97.5% | SR(2mm):  97.5% | PosErr:  3.46mm (med 0.11mm) | RotErr: 1.26° (med 0.03°) | Steps: 15.1 | α: 0.0030 | SPS: 1,819 | t=1099.7s
+[Step 2,080,000/5,000,000] SR(5mm):  98.5% | SR(2mm):  98.0% | PosErr:  0.63mm (med 0.12mm) | RotErr: 0.12° (med 0.03°) | Steps: 14.7 | α: 0.0027 | SPS: 1,816 | t=1145.1s
+[Step 2,160,000/5,000,000] SR(5mm):  98.0% | SR(2mm):  98.0% | PosErr:  1.57mm (med 0.11mm) | RotErr: 0.48° (med 0.03°) | Steps: 14.5 | α: 0.0026 | SPS: 1,815 | t=1190.3s
+[Step 2,240,000/5,000,000] SR(5mm):  98.0% | SR(2mm):  97.5% | PosErr:  1.67mm (med 0.10mm) | RotErr: 0.61° (med 0.03°) | Steps: 14.6 | α: 0.0026 | SPS: 1,814 | t=1234.9s
+[Step 2,320,000/5,000,000] SR(5mm):  99.5% | SR(2mm):  99.5% | PosErr:  0.70mm (med 0.10mm) | RotErr: 0.17° (med 0.03°) | Steps: 13.8 | α: 0.0025 | SPS: 1,813 | t=1279.5s
+[Step 2,400,000/5,000,000] SR(5mm):  98.0% | SR(2mm):  97.5% | PosErr:  0.45mm (med 0.11mm) | RotErr: 0.18° (med 0.03°) | Steps: 14.9 | α: 0.0025 | SPS: 1,813 | t=1324.0s
+[Step 2,480,000/5,000,000] SR(5mm):  99.5% | SR(2mm):  99.5% | PosErr:  0.38mm (med 0.10mm) | RotErr: 0.08° (med 0.03°) | Steps: 13.0 | α: 0.0025 | SPS: 1,813 | t=1368.1s
+[Step 2,560,000/5,000,000] SR(5mm):  99.5% | SR(2mm):  99.0% | PosErr:  0.20mm (med 0.09mm) | RotErr: 0.06° (med 0.03°) | Steps: 13.6 | α: 0.0026 | SPS: 1,812 | t=1412.5s
+[Step 2,640,000/5,000,000] SR(5mm):  98.5% | SR(2mm):  98.5% | PosErr:  0.50mm (med 0.09mm) | RotErr: 0.23° (med 0.03°) | Steps: 14.0 | α: 0.0025 | SPS: 1,811 | t=1457.4s
+[Step 2,720,000/5,000,000] SR(5mm):  98.0% | SR(2mm):  98.0% | PosErr:  1.40mm (med 0.09mm) | RotErr: 0.33° (med 0.03°) | Steps: 14.4 | α: 0.0025 | SPS: 1,812 | t=1501.3s
+[Step 2,800,000/5,000,000] SR(5mm):  99.5% | SR(2mm):  99.5% | PosErr:  0.51mm (med 0.09mm) | RotErr: 0.11° (med 0.03°) | Steps: 13.5 | α: 0.0025 | SPS: 1,811 | t=1545.8s
+[Step 2,880,000/5,000,000] SR(5mm):  98.5% | SR(2mm):  98.5% | PosErr:  0.33mm (med 0.09mm) | RotErr: 0.11° (med 0.03°) | Steps: 14.1 | α: 0.0025 | SPS: 1,810 | t=1591.0s
+[Step 2,960,000/5,000,000] SR(5mm):  99.0% | SR(2mm):  99.0% | PosErr:  0.30mm (med 0.08mm) | RotErr: 0.08° (med 0.03°) | Steps: 13.9 | α: 0.0025 | SPS: 1,810 | t=1635.6s
+[Step 3,040,000/5,000,000] SR(5mm):  99.0% | SR(2mm):  98.5% | PosErr:  1.06mm (med 0.09mm) | RotErr: 0.27° (med 0.03°) | Steps: 14.0 | α: 0.0025 | SPS: 1,809 | t=1680.6s
+[Step 3,120,000/5,000,000] SR(5mm): 100.0% | SR(2mm):  99.5% | PosErr:  0.11mm (med 0.09mm) | RotErr: 0.05° (med 0.03°) | Steps: 13.4 | α: 0.0025 | SPS: 1,808 | t=1725.8s
+[Step 3,200,000/5,000,000] SR(5mm):  99.0% | SR(2mm):  99.0% | PosErr:  0.55mm (med 0.08mm) | RotErr: 0.41° (med 0.03°) | Steps: 13.3 | α: 0.0026 | SPS: 1,807 | t=1770.8s
+[Step 3,280,000/5,000,000] SR(5mm):  98.5% | SR(2mm):  98.5% | PosErr:  1.47mm (med 0.09mm) | RotErr: 0.43° (med 0.03°) | Steps: 13.5 | α: 0.0026 | SPS: 1,807 | t=1815.3s
+[Step 3,360,000/5,000,000] SR(5mm):  98.5% | SR(2mm):  98.5% | PosErr:  0.25mm (med 0.09mm) | RotErr: 0.05° (med 0.03°) | Steps: 13.6 | α: 0.0026 | SPS: 1,807 | t=1859.5s
+
+[Signal] Stopping after the current step and saving the resume state (press again to abort)
+
+[Done] Training interrupted at env step 3,423,744 in 1896.5s. Best checkpoint: runs/so101/20261104_042133/checkpoints/best_model.pt | resume state: runs/so101/20261104_042133/checkpoints/resume_state.pt
+[Init] Run directory: runs/so101/20261104_042133 (resuming)
+[Init] Device: cuda (NVIDIA GeForce RTX 4090)
+[Init] Creating 64 vectorized SO-ARM101 MuJoCo envs...
+[Init] Loading resume state runs/so101/20261104_042133/checkpoints/resume_state.pt ...
+[Init] Resumed at env step 3,423,744 (buffer 2,000,000, 42 evals)
+[Train] Starting SAC | total_steps=5,000,000 | batch_size=1024 | updates_per_rollout=6 | early stop: mean SR(2mm) of last 5 evals >= 99.5% / plateau 15 evals
+[Step 3,440,000/5,000,000] SR(5mm):  98.5% | SR(2mm):  98.0% | PosErr:  0.49mm (med 0.09mm) | RotErr: 0.13° (med 0.03°) | Steps: 14.1 | α: 0.0026 | SPS: 1,806 | t=1904.5s
+[Step 3,520,000/5,000,000] SR(5mm):  99.0% | SR(2mm):  99.0% | PosErr:  1.46mm (med 0.08mm) | RotErr: 0.25° (med 0.03°) | Steps: 13.8 | α: 0.0026 | SPS: 1,803 | t=1952.3s
+[Step 3,600,000/5,000,000] SR(5mm):  99.5% | SR(2mm):  99.0% | PosErr:  0.38mm (med 0.08mm) | RotErr: 0.16° (med 0.03°) | Steps: 13.0 | α: 0.0026 | SPS: 1,800 | t=2000.5s
+[Step 3,680,000/5,000,000] SR(5mm):  99.5% | SR(2mm):  98.5% | PosErr:  1.25mm (med 0.08mm) | RotErr: 0.17° (med 0.03°) | Steps: 13.6 | α: 0.0026 | SPS: 1,798 | t=2047.2s
+[Step 3,760,000/5,000,000] SR(5mm):  98.5% | SR(2mm):  98.5% | PosErr:  0.82mm (med 0.08mm) | RotErr: 0.51° (med 0.03°) | Steps: 13.9 | α: 0.0026 | SPS: 1,796 | t=2093.5s
+[Step 3,840,000/5,000,000] SR(5mm):  97.5% | SR(2mm):  97.5% | PosErr:  1.61mm (med 0.08mm) | RotErr: 0.39° (med 0.03°) | Steps: 14.3 | α: 0.0027 | SPS: 1,793 | t=2141.8s
+[Step 3,920,000/5,000,000] SR(5mm):  97.5% | SR(2mm):  97.5% | PosErr:  0.85mm (med 0.08mm) | RotErr: 0.30° (med 0.03°) | Steps: 14.5 | α: 0.0026 | SPS: 1,793 | t=2186.3s
+[Step 4,000,000/5,000,000] SR(5mm): 100.0% | SR(2mm):  99.5% | PosErr:  0.14mm (med 0.09mm) | RotErr: 0.05° (med 0.03°) | Steps: 13.0 | α: 0.0027 | SPS: 1,793 | t=2230.9s
+[Step 4,080,000/5,000,000] SR(5mm):  98.5% | SR(2mm):  98.0% | PosErr:  0.67mm (med 0.09mm) | RotErr: 0.30° (med 0.03°) | Steps: 14.1 | α: 0.0027 | SPS: 1,792 | t=2276.3s
+[Step 4,160,000/5,000,000] SR(5mm):  98.5% | SR(2mm):  98.0% | PosErr:  0.29mm (med 0.09mm) | RotErr: 0.17° (med 0.03°) | Steps: 13.5 | α: 0.0026 | SPS: 1,800 | t=2311.7s
+[Step 4,240,000/5,000,000] SR(5mm):  99.5% | SR(2mm):  99.5% | PosErr:  0.28mm (med 0.09mm) | RotErr: 0.05° (med 0.03°) | Steps: 13.5 | α: 0.0026 | SPS: 1,807 | t=2346.1s
+[Step 4,320,000/5,000,000] SR(5mm):  99.0% | SR(2mm):  98.5% | PosErr:  0.50mm (med 0.09mm) | RotErr: 0.23° (med 0.03°) | Steps: 13.9 | α: 0.0027 | SPS: 1,814 | t=2381.4s
+[EarlyStop] no new best model for 15 evals (plateau) at env step 4,320,000
+
+[Done] Training early_stop at env step 4,320,000 in 2382.9s. Best checkpoint: runs/so101/20261104_042133/checkpoints/best_model.pt | resume state: runs/so101/20261104_042133/checkpoints/resume_state.pt
