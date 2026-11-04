@@ -8,14 +8,22 @@ Sizes below are given for a robot with $n$ arm joints ($n = 7$ for the Franka Pa
 
 500 random reachable target poses all around each robot, with random start configurations (`eval.py`, solver stops at 2 mm / 0.02 rad, at most 120 steps; latest run in `runs/<robot>/`). Solve time: single `solve()` calls on an RTX 4090.
 
-| Robot | Restarts | Success (< 5 mm & < 2.86°) | Success (< 2 mm & < 1.15°) | Mean steps | Mean solve time |
-|---|---|---|---|---|---|
-| Franka Panda | 1 | 94.8% | 93.8% | 22.8 | 8.2 ms |
-| Franka Panda | 4 | 99.4% | 99.2% | 15.0 | 5.8 ms |
-| UR5e | 1 | 88.2% | 85.6% | 29.3 | 13.3 ms |
-| UR5e | 4 | 99.4% | 99.2% | 20.5 | 8.2 ms |
-| SO-ARM101 | 1 | 99.4% | 99.0% | 15.7 | 4.7 ms |
-| SO-ARM101 | 4 | 99.8% | 99.8% | 11.2 | 4.5 ms |
+| Robot | Restarts | DLS refinement | Success (< 5 mm & < 2.86°) | Success (< 2 mm & < 1.15°) | Success (< 0.1 mm & < 0.001°) | Mean steps (+ DLS iterations) | Mean solve time |
+|---|---|---|---|---|---|---|---|
+| Franka Panda | 1 | no | 94.8% | 93.8% | 0.0% | 22.8 | 8.2 ms |
+| Franka Panda | 1 | yes | 96.6% | 96.4% | 92.0% | 22.8 + 3.8 | 8.5 ms |
+| Franka Panda | 4 | no | 99.4% | 99.2% | 0.0% | 15.0 | 5.8 ms |
+| Franka Panda | 4 | yes | 99.4% | 99.4% | 98.8% | 15.0 + 2.6 | 6.1 ms |
+| UR5e | 1 | no | 88.2% | 85.6% | 0.0% | 29.3 | 12.9 ms |
+| UR5e | 1 | yes | 91.4% | 90.6% | 90.4% | 29.3 + 4.5 | 13.5 ms |
+| UR5e | 4 | no | 99.4% | 99.2% | 0.0% | 20.5 | 8.2 ms |
+| UR5e | 4 | yes | 99.6% | 99.6% | 99.6% | 20.5 + 2.4 | 8.5 ms |
+| SO-ARM101 | 1 | no | 99.4% | 99.0% | 0.0% | 15.7 | 4.6 ms |
+| SO-ARM101 | 1 | yes | 99.2% | 99.0% | 96.0% | 15.7 + 1.9 | 5.0 ms |
+| SO-ARM101 | 4 | no | 99.8% | 99.8% | 0.0% | 11.2 | 4.4 ms |
+| SO-ARM101 | 4 | yes | 99.8% | 99.8% | 98.2% | 11.2 + 2.5 | 4.6 ms |
+
+**DLS refinement** (`refine=True`, `eval.py --refine`): after the policy, damped least squares ($\Delta q = J^T (J J^T + \lambda^2 I)^{-1} e$, $\lambda = 10^{-3}$, float64 kinematics, step halving, joint limits, final collision check) refines the best pose towards 0.1 mm / 0.001°. Starting from the policy's ~1 mm solution it needs only 2-4 iterations (~0.3 ms). If the best branch cannot be refined to the tolerance, the other branches' final configurations are tried: on the SO-ARM101 the policy sometimes converges to the mirrored configuration (base or wrist roll turned by $\pi$), which, because of small lateral offsets in the model, is ~0.3 mm off the target. The idea of letting RL provide good initial values for DLS follows Yu & Tan, *IK of a 7-DoF Robotic Arm Based on Deep RL and Damped Least Squares*, IEEE Access 2025 (there the policy outputs absolute joint angles as DLS seeds; here the policy itself solves to ~1 mm with collision-free incremental steps, and DLS only finishes).
 
 Single-start failures are mostly local minima far from the target (not step-limit or near misses); multi-start solving (one GPU batch) recovers almost all of them. The UR5e is non-redundant (up to 8 discrete IK solutions per pose) and its joints turn +-2 pi; targets and starts are sampled within one turn, because "wound-up" start configurations near +-2 pi got pinned at joint limits (single-start 77% with a +-2 pi sampling box). Its remaining single-start failures are partly collision-blocked paths.
 

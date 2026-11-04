@@ -68,11 +68,12 @@ sol = solver.solve(
     target_quat=np.array([0.0, 1.0, 0.0, 0.0]),  # [w, x, y, z], or target_rot=<3x3 matrix>
     q_init=None,       # optional start configuration (n,)
     num_restarts=4,    # parallel start configurations; the best result is returned
+    refine=True,       # optional DLS refinement after the policy: ~0.1 mm / 0.001 deg instead of ~1 mm
 )
 print(sol.qpos, sol.pos_err_m, sol.rot_err_rad, sol.success)
 ```
 
-`solve()` returns an `IKSolution` with `qpos`, `ee_pos`, `ee_quat`, `pos_err_m`, `rot_err_rad`, `steps` and `success`.
+`solve()` returns an `IKSolution` with `qpos`, `ee_pos`, `ee_quat`, `pos_err_m`, `rot_err_rad`, `steps`, `success` and `refine_iters`; `solve_batch()` solves many targets in one GPU batch. Use `eval.py --refine` to benchmark with refinement.
 
 ## Adding a Robot
 

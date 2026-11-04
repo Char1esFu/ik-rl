@@ -38,6 +38,9 @@ def main() -> None:
     parser.add_argument("--max-steps", type=int, default=120, help="Max kinematic steps per solve")
     parser.add_argument("--out-dir", type=str, default=None, help="Default: <run>/outputs of the checkpoint")
     parser.add_argument("--seed", type=int, default=2026)
+    parser.add_argument(
+        "--refine", action="store_true", help="DLS refinement after the policy (towards 0.1 mm / 0.001 deg)"
+    )
     parser.add_argument("--timing-tests", type=int, default=100, help="Targets timed with single solve() calls")
     args = parser.parse_args()
 
@@ -61,7 +64,10 @@ def main() -> None:
     solver.solve(p_warm, target_rot=R_warm, max_steps=10)
 
     targets = EvalTargets.sample(env, args.num_tests, rng)
-    metrics, solutions = evaluate_solver(solver, targets, num_restarts=args.restarts, max_steps=args.max_steps)
+    suffix = "_refine" if args.refine else ""
+    metrics, solutions = evaluate_solver(
+        solver, targets, num_restarts=args.restarts, max_steps=args.max_steps, refine=args.refine
+    )
 
     # Latency of single solve() calls (the batched evaluation above solves all targets at once)
     solve_times_ms: list[float] = []
@@ -70,6 +76,7 @@ def main() -> None:
         solver.solve(
             targets.pos[i], target_rot=targets.rot[i], q_init=targets.q_init[i], max_steps=args.max_steps,
             pos_tol=env_cfg.term_pos_tol, rot_tol=env_cfg.term_rot_tol, num_restarts=args.restarts,
+            refine=args.refine,
         )
         solve_times_ms.append((time.perf_counter() - t0) * 1000.0)
 
@@ -90,8 +97,10 @@ def main() -> None:
         "num_tests": args.num_tests,
         "num_restarts": args.restarts,
         "max_steps": args.max_steps,
+        "refine": args.refine,
         "success_rate_5mm_2.86deg_pct": round(metrics["success_rate_5mm"], 2),
         "success_rate_2mm_1.15deg_pct": round(metrics["success_rate_2mm"], 2),
+        "success_rate_0.1mm_0.001deg_pct": round(metrics["success_rate_0.1mm"], 2),
         "pos_err_mm": {
             "mean": r(metrics["mean_pos_err_mm"]),
             "median": r(metrics["median_pos_err_mm"]),
@@ -105,6 +114,7 @@ def main() -> None:
             "max": r(metrics["max_rot_err_deg"]),
         },
         "mean_steps": round(metrics["mean_steps"], 2),
+        "mean_refine_iters": round(metrics["mean_refine_iters"], 2),
         "mean_solve_time_ms": round(float(np.mean(solve_times_ms)), 2) if solve_times_ms else None,
         "solve_time_note": f"single solve() calls on the first {len(solve_times_ms)} targets",
     }
@@ -112,14 +122,14 @@ def main() -> None:
     print("\n================ SAC 6D IK Benchmark Summary ================")
     print(json.dumps(summary, indent=2, ensure_ascii=False))
 
-    with open(out_dir / f"eval_summary_r{args.restarts}.json", "w", encoding="utf-8") as f:
+    with open(out_dir / f"eval_summary_r{args.restarts}{suffix}.json", "w", encoding="utf-8") as f:
         json.dump(summary, f, indent=2)
 
     # Render gallery figure
     if gallery_samples:
         fig, axes = plt.subplots(2, 3, figsize=(15, 9.5), dpi=140)
         fig.suptitle(
-            f"{solver.robot.display_name} 6D IK Solved Poses (SAC Policy, restarts={args.restarts})\n"
+            f"{solver.robot.display_name} 6D IK Solved Poses (SAC Policy{' + DLS' if args.refine else ''}, restarts={args.restarts})\n"
             f"SR(<5mm, <2.86°): {summary['success_rate_5mm_2.86deg_pct']}% | "
             f"Median Error: {summary['pos_err_mm']['median']:.2f} mm, {summary['rot_err_deg']['median']:.2f}°",
             fontsize=13,
@@ -130,7 +140,7 @@ def main() -> None:
             ax.axis("off")
             ax.set_title(f"Δpos={pe:.2f} mm | Δrot={re:.2f}° ({st} steps)", fontsize=11)
         fig.tight_layout()
-        gallery_path = out_dir / f"ik_eval_gallery_r{args.restarts}.png"
+        gallery_path = out_dir / f"ik_eval_gallery_r{args.restarts}{suffix}.png"
         fig.savefig(gallery_path)
         plt.close(fig)
         print(f"[Eval] Saved rendered pose gallery to {gallery_path}")

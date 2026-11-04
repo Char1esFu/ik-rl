@@ -22,11 +22,16 @@ def resolve_robot(robot: RobotSpec | str) -> RobotSpec:
     return get_robot(robot) if isinstance(robot, str) else robot
 
 
+# Offscreen framebuffer size: upper bound for any mujoco.Renderer of the IK model (e.g. the web viewer)
+MAX_RENDER_WIDTH = 2560
+MAX_RENDER_HEIGHT = 1600
+
+
 def build_ik_model(robot: RobotSpec) -> mujoco.MjModel:
     """Compile the robot scene with a TCP site, RGB axis markers and a mocap target marker."""
     spec = mujoco.MjSpec.from_file(str(robot.scene_xml))
-    spec.visual.global_.offwidth = 1280
-    spec.visual.global_.offheight = 960
+    spec.visual.global_.offwidth = MAX_RENDER_WIDTH
+    spec.visual.global_.offheight = MAX_RENDER_HEIGHT
 
     ee_body = spec.body(robot.ee_body)
     offset = np.asarray(robot.ee_offset, dtype=np.float64)

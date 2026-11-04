@@ -17,6 +17,9 @@ import numpy as np
 
 from ik_rl.env import IKEnv, VectorIKEnv
 
+PRECISE_POS_TOL = 1e-4  # 0.1 mm
+PRECISE_ROT_TOL = float(np.radians(1e-3))  # 0.001 deg
+
 if TYPE_CHECKING:
     from ik_rl.sac import SACAgent
     from ik_rl.solver import IKSolution, SACIKSolver
@@ -54,6 +57,8 @@ def solution_metrics(solutions: list[IKSolution], pos_tol: float, rot_tol: float
     return {
         "success_rate_5mm": float(np.mean((pe < pos_tol) & (re < rot_tol)) * 100.0),
         "success_rate_2mm": float(np.mean((pe < tight_pos_tol) & (re < tight_rot_tol)) * 100.0),
+        # high-precision level (0.1 mm / 0.001 deg, as in DLS-based IK papers); needs refine=True
+        "success_rate_0.1mm": float(np.mean((pe < PRECISE_POS_TOL) & (re < PRECISE_ROT_TOL)) * 100.0),
         "mean_pos_err_mm": float(np.mean(pe_mm)),
         "median_pos_err_mm": float(np.median(pe_mm)),
         "p95_pos_err_mm": float(np.percentile(pe_mm, 95)),
@@ -63,6 +68,7 @@ def solution_metrics(solutions: list[IKSolution], pos_tol: float, rot_tol: float
         "p95_rot_err_deg": float(np.percentile(re_deg, 95)),
         "max_rot_err_deg": float(np.max(re_deg)),
         "mean_steps": float(np.mean([s.steps for s in solutions])),
+        "mean_refine_iters": float(np.mean([s.refine_iters for s in solutions])),
     }
 
 
@@ -71,8 +77,12 @@ def evaluate_solver(
     targets: EvalTargets,
     num_restarts: int = 1,
     max_steps: int = 120,
+    refine: bool = False,
 ) -> tuple[dict[str, float], list[IKSolution]]:
-    """Benchmark protocol: solve all targets (one batch) to the tight tolerance; returns metrics and solutions."""
+    """Benchmark protocol: solve all targets (one batch) to the tight tolerance; returns metrics and solutions.
+
+    refine=True adds DLS refinement towards 0.1 mm / 0.001 deg after the policy.
+    """
     cfg = solver.cfg
     solutions = solver.solve_batch(
         targets.pos,
@@ -82,6 +92,9 @@ def evaluate_solver(
         pos_tol=cfg.term_pos_tol,
         rot_tol=cfg.term_rot_tol,
         num_restarts=num_restarts,
+        refine=refine,
+        refine_pos_tol=PRECISE_POS_TOL,
+        refine_rot_tol=PRECISE_ROT_TOL,
     )
     metrics = solution_metrics(solutions, cfg.eval_pos_tol, cfg.eval_rot_tol, cfg.term_pos_tol, cfg.term_rot_tol)
     return metrics, solutions

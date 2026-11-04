@@ -79,11 +79,14 @@ def rotmat_to_r6d(rot: np.ndarray) -> np.ndarray:
     return np.concatenate([rot[..., :, 0], rot[..., :, 1]], axis=-1).astype(np.float32)
 
 
-def so3_error_vec(R_cur: np.ndarray, R_goal: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+def so3_error_vec(
+    R_cur: np.ndarray, R_goal: np.ndarray, out_dtype: type = np.float32
+) -> tuple[np.ndarray, np.ndarray]:
     """Compute world-frame SO(3) axis-angle error vector and geodesic angle [0, pi].
 
     R_err = R_goal @ R_cur^T so that exp([omega]_x) @ R_cur = R_goal.
     Uses atan2(||vee(R_err - R_err^T)||, tr(R_err) - 1) for full precision near 0.
+    Computed in float64; out_dtype=np.float64 keeps that precision (e.g. for DLS refinement).
     """
     orig_shape = R_cur.shape[:-2]
     Rc = np.asarray(R_cur, dtype=np.float64).reshape(-1, 3, 3)
@@ -112,4 +115,4 @@ def so3_error_vec(R_cur: np.ndarray, R_goal: np.ndarray) -> tuple[np.ndarray, np
         u = cols / np.clip(np.linalg.norm(cols, axis=-1, keepdims=True), 1e-12, None)
         omega[near_pi] = np.pi * u
 
-    return omega.reshape(orig_shape + (3,)).astype(np.float32), angle.reshape(orig_shape).astype(np.float32)
+    return omega.reshape(orig_shape + (3,)).astype(out_dtype), angle.reshape(orig_shape).astype(out_dtype)

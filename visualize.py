@@ -42,8 +42,13 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--native", action="store_true", help="Force native GLFW desktop window")
     parser.add_argument("--host", type=str, default="0.0.0.0", help="Bind host for web viewer")
     parser.add_argument("--port", type=int, default=8080, help="Port for web viewer (auto-forwarded in Remote SSH)")
-    parser.add_argument("--width", type=int, default=960, help="Web render width (<= 1280)")
-    parser.add_argument("--height", type=int, default=640, help="Web render height (<= 960)")
+    parser.add_argument("--width", type=int, default=960, help="Initial web render width (the page then requests its own size)")
+    parser.add_argument("--height", type=int, default=640, help="Initial web render height")
+    parser.add_argument(
+        "--max-width", type=int, default=1920,
+        help="Web render resolution cap; the page's size is scaled down to fit (higher = sharper but slower, <= 2560)",
+    )
+    parser.add_argument("--max-height", type=int, default=1200, help="Web render resolution cap (<= 1600)")
     parser.add_argument("--fps", type=int, default=30, help="Target frame rate for web viewer")
     parser.add_argument("--jpeg-quality", type=int, default=82, help="JPEG quality (1-95) for web stream")
     return parser.parse_args()
@@ -474,13 +479,20 @@ async def run_web_viewer_async(args: argparse.Namespace) -> None:
     from websockets.http11 import Request, Response
 
     from ik_rl.config import IKConfig
-    from ik_rl.env import IKEnv
+    from ik_rl.env import MAX_RENDER_HEIGHT, MAX_RENDER_WIDTH, IKEnv
     from ik_rl.math_utils import so3_error_vec
     from ik_rl.sac import SACAgent
     from ik_rl.solver import checkpoint_robot
 
-    width = min(max(320, args.width), 1280)
-    height = min(max(240, args.height), 960)
+    max_w = min(max(320, args.max_width), MAX_RENDER_WIDTH)
+    max_h = min(max(240, args.max_height), MAX_RENDER_HEIGHT)
+
+    def fit_render_size(w: float, h: float) -> tuple[int, int]:
+        """Scale a requested size down (keeping its aspect ratio) to the resolution cap."""
+        scale = min(1.0, max_w / max(w, 1.0), max_h / max(h, 1.0))
+        return max(160, int(w * scale)), max(120, int(h * scale))
+
+    width, height = fit_render_size(args.width, args.height)
     device = "cuda" if torch.cuda.is_available() else "cpu"
 
     agent, meta = SACAgent.load(args.checkpoint, device=device)
@@ -517,6 +529,7 @@ async def run_web_viewer_async(args: argparse.Namespace) -> None:
         "sync_seq": 0,
         "fig8_t0": time.perf_counter(),
         "paused_at": 0.0,
+        "render_size": (width, height),  # requested by the page (fit to the cap)
         "obs": obs,
         "info": info,
     }
@@ -558,6 +571,9 @@ async def run_web_viewer_async(args: argparse.Namespace) -> None:
                 mj_act = mujoco.mjtMouse.mjMOUSE_ROTATE_V
             mujoco.mjv_moveCamera(env.model, mj_act, dx, dy, cam)
             cam.distance = float(np.clip(cam.distance, 0.35, 4.5))
+
+        elif ctype == "resize":
+            state["render_size"] = fit_render_size(float(cmd["width"]), float(cmd["height"]))
 
         elif ctype == "camera_reset":
             reset_camera()
@@ -725,6 +741,10 @@ async def run_web_viewer_async(args: argparse.Namespace) -> None:
                 if clients:
                     env._sync_target_mocap()
                     mujoco.mj_forward(env.model, env.data)
+                    if state["render_size"] != (width, height):
+                        width, height = state["render_size"]
+                        renderer.close()
+                        renderer = mujoco.Renderer(env.model, height=height, width=width)
                     renderer.update_scene(env.data, camera=cam, scene_option=opt)
                     rgb = renderer.render()
 

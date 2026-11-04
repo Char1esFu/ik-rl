@@ -51,6 +51,11 @@ web/viewer.html        # web viewer page (HTML/CSS/JS) served by visualize.py; _
   Batched solving matches one-at-a-time `solve()` in success (TF32 matmuls make actions differ ~1e-3
   with batch size, so failing trajectories are not bit-identical); single `solve()` is bit-identical to
   the pre-refactor solver.
+- High precision comes from **DLS refinement** (`rollout.dls_refine`, `solve(..., refine=True)`,
+  `eval.py --refine`): float64 kinematics, step halving, joint limits, final collision check; refines the
+  best pose, then the other branches' final configurations if needed (SO-101 policy sometimes lands on the
+  mirrored pan/wrist + pi configuration, ~0.3 mm off). 4 starts + refine: 98-99.6% at 0.1 mm / 0.001 deg.
+  The policy alone never reaches that level (it stops at 2 mm by design).
 - Checkpoint meta stores `robot`, `robot_spec` and `env_config` (incl. `obs_features`).
   `checkpoint_robot(meta)` / `IKConfig.from_dict(meta["env_config"])` rebuild the exact setup, so
   solver / eval / viewer must load the robot and config **from the checkpoint**, not from defaults.

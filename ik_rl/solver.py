@@ -12,7 +12,7 @@ from ik_rl.config import IKConfig
 from ik_rl.env import RobotKinematics
 from ik_rl.math_utils import quat_to_rotmat, rotmat_to_quat
 from ik_rl.robot import DEFAULT_ROBOT, RobotSpec, get_robot
-from ik_rl.rollout import rollout_groups
+from ik_rl.rollout import ROT_SCORE_WEIGHT, dls_refine, rollout_groups
 from ik_rl.sac import SACAgent
 
 
@@ -25,8 +25,9 @@ class IKSolution:
     ee_quat: np.ndarray
     pos_err_m: float
     rot_err_rad: float
-    steps: int
-    success: bool
+    steps: int  # policy steps
+    success: bool  # within (pos_tol, rot_tol), or the refinement tolerances if refine=True
+    refine_iters: int = 0  # DLS iterations (0 if not refined)
 
 
 def checkpoint_robot(meta: dict) -> RobotSpec:
@@ -127,8 +128,16 @@ class SACIKSolver:
         pos_tol: float = 0.005,
         rot_tol: float = 0.05,
         num_restarts: int = 1,
+        refine: bool = False,
+        refine_pos_tol: float = 1e-4,
+        refine_rot_tol: float = float(np.radians(1e-3)),
+        refine_iters: int = 30,
     ) -> IKSolution:
-        """Solve 6D IK for (target_pos, target_quat [w,x,y,z] or target_rot [3,3])."""
+        """Solve 6D IK for (target_pos, target_quat [w,x,y,z] or target_rot [3,3]).
+
+        The policy iterates until within (pos_tol, rot_tol). With refine=True, damped least squares then
+        refines the best pose to (refine_pos_tol, refine_rot_tol) (default 0.1 mm / 0.001 deg).
+        """
         return self.solve_batch(
             np.asarray(target_pos, dtype=np.float32).reshape(1, 3),
             target_quat=None if target_quat is None else np.asarray(target_quat).reshape(1, 4),
@@ -138,6 +147,10 @@ class SACIKSolver:
             pos_tol=pos_tol,
             rot_tol=rot_tol,
             num_restarts=num_restarts,
+            refine=refine,
+            refine_pos_tol=refine_pos_tol,
+            refine_rot_tol=refine_rot_tol,
+            refine_iters=refine_iters,
         )[0]
 
     def solve_batch(
@@ -150,6 +163,10 @@ class SACIKSolver:
         pos_tol: float = 0.005,
         rot_tol: float = 0.05,
         num_restarts: int = 1,
+        refine: bool = False,
+        refine_pos_tol: float = 1e-4,
+        refine_rot_tol: float = float(np.radians(1e-3)),
+        refine_iters: int = 30,
     ) -> list[IKSolution]:
         """Solve N targets at once: target_pos (N, 3), target_quat (N, 4) or target_rot (N, 3, 3), q_init (N, n).
 
@@ -164,15 +181,36 @@ class SACIKSolver:
         res = rollout_groups(
             self.agent, self.kin, self.data, self.cfg, q_start, p_goal, R_goal, max_steps, pos_tol, rot_tol
         )
-        return [
-            IKSolution(
-                qpos=res.q[i],
-                ee_pos=res.p[i],
-                ee_quat=rotmat_to_quat(res.R[i]),
-                pos_err_m=float(res.pos_err[i]),
-                rot_err_rad=float(res.rot_err[i]),
-                steps=int(res.steps[i]),
-                success=bool(res.success[i]),
+        solutions = []
+        for i in range(count):
+            q, p, R = res.q[i], res.p[i], res.R[i]
+            d_pos, d_rot, iters = float(res.pos_err[i]), float(res.rot_err[i]), 0
+            ok = bool(res.success[i])
+            if refine:
+                # Refine the best pose; if it does not reach the tolerance (e.g. a near-solution in another IK
+                # branch, like SO-101's mirrored pan + pi configuration ~0.3 mm off), try the other branches' final
+                # configurations in order of their error and keep the best refined result.
+                seeds = [q] + [res.branch_q[i, j] for j in np.argsort(res.branch_score[i])]
+                for seed in seeds:
+                    r = dls_refine(
+                        self.kin, self.data, seed, p_goal[i], R_goal[i], refine_pos_tol, refine_rot_tol, refine_iters
+                    )
+                    if r is not None and r.pos_err + ROT_SCORE_WEIGHT * r.rot_err < d_pos + ROT_SCORE_WEIGHT * d_rot:
+                        q, p, R, d_pos, d_rot = r.q, r.p, r.R, r.pos_err, r.rot_err
+                    iters += r.iters if r is not None else 0
+                    if d_pos < refine_pos_tol and d_rot < refine_rot_tol:
+                        break
+                ok = (d_pos < refine_pos_tol) and (d_rot < refine_rot_tol)
+            solutions.append(
+                IKSolution(
+                    qpos=q,
+                    ee_pos=p,
+                    ee_quat=rotmat_to_quat(R),
+                    pos_err_m=d_pos,
+                    rot_err_rad=d_rot,
+                    steps=int(res.steps[i]),
+                    success=ok,
+                    refine_iters=iters,
+                )
             )
-            for i in range(count)
-        ]
+        return solutions
