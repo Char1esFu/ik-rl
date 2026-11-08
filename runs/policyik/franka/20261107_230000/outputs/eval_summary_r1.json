@@ -1,0 +1,28 @@
+{
+  "checkpoint": "runs/policyik/franka/20261107_230000/checkpoints/best_model.pt",
+  "robot": "franka",
+  "method": "PolicyIK",
+  "num_tests": 500,
+  "num_restarts": 1,
+  "max_steps": 120,
+  "refine": false,
+  "success_rate_5mm_2.86deg_pct": 98.4,
+  "success_rate_2mm_1.15deg_pct": 97.6,
+  "success_rate_0.1mm_0.001deg_pct": 0.0,
+  "pos_err_mm": {
+    "mean": 5.421,
+    "median": 1.51,
+    "p95": 1.969,
+    "max": 1109.507
+  },
+  "rot_err_deg": {
+    "mean": 0.996,
+    "median": 0.454,
+    "p95": 1.088,
+    "max": 145.682
+  },
+  "mean_steps": 21.1,
+  "mean_refine_iters": 0.0,
+  "mean_solve_time_ms": 11.68,
+  "solve_time_note": "single solve() calls on the first 100 targets"
+}

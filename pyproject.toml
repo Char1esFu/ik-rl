@@ -1,13 +1,14 @@
 [project]
 name = "ik-rl"
 version = "0.1.0"
-description = "Learned 6D inverse kinematics for robot arms (Franka Panda, UR5e) in MuJoCo using Soft Actor-Critic (SAC)"
+description = "Learned 6D inverse kinematics for robot arms (Franka Panda, UR5e, SO-ARM101) in MuJoCo: SAC+DLS and PolicyIK (PPO)"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "gymnasium>=1.0.0",
     "matplotlib>=3.8.0",
-    "mujoco>=3.2.0",
+    "mujoco>=4.0.0",
+    "mujoco-warp>=4.0.0",
     "numpy>=2.0.0",
     "pillow>=10.0.0",
     "pyyaml>=6.0",

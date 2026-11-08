@@ -1,0 +1,27 @@
+{
+  "checkpoint": "runs/sac+dls/so101/20261104_042133/checkpoints/best_model.pt",
+  "robot": "so101",
+  "num_tests": 500,
+  "num_restarts": 1,
+  "max_steps": 120,
+  "refine": true,
+  "success_rate_5mm_2.86deg_pct": 99.2,
+  "success_rate_2mm_1.15deg_pct": 99.0,
+  "success_rate_0.1mm_0.001deg_pct": 96.0,
+  "pos_err_mm": {
+    "mean": 0.356,
+    "median": 0.002,
+    "p95": 0.084,
+    "max": 113.981
+  },
+  "rot_err_deg": {
+    "mean": 0.068,
+    "median": 0.0,
+    "p95": 0.001,
+    "max": 16.352
+  },
+  "mean_steps": 15.68,
+  "mean_refine_iters": 1.93,
+  "mean_solve_time_ms": 5.05,
+  "solve_time_note": "single solve() calls on the first 100 targets"
+}

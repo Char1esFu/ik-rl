@@ -1,0 +1,281 @@
+{
+ "robot": "so101",
+ "num_tasks": 2000,
+ "seed": 7,
+ "steps": 160,
+ "methods": {
+  "sac+dls": {
+   "single": {
+    "strict": 97.6,
+    "coarse": 98.7,
+    "entry": 98.0,
+    "containment": 97.55,
+    "uncontained_after_entry": 0.4592,
+    "entry_time_s": 0.6333,
+    "drift_um": 3.9705,
+    "drift_deg": 0.001,
+    "pos_mean_mm": 0.9074,
+    "pos_median_mm": 0.0861,
+    "ori_mean_deg": 0.2497,
+    "ori_median_deg": 0.0302,
+    "refined_strict": 98.3,
+    "refined_0.1mm": 94.75
+   },
+   "corrected_calls": 25,
+   "corrected_rescued": 8,
+   "deployment": {
+    "steps": [
+     {
+      "label": "single attempt",
+      "strict": 97.6,
+      "coarse": 98.7,
+      "EN": 1.0
+     },
+     {
+      "label": "+ error-corrected goal",
+      "strict": 98.0,
+      "coarse": 98.7,
+      "EN": 1.012
+     },
+     {
+      "label": "+ transient goal 0",
+      "strict": 99.35,
+      "coarse": 99.75,
+      "EN": 1.032
+     },
+     {
+      "label": "+ transient goal 1",
+      "strict": 99.55,
+      "coarse": 99.8,
+      "EN": 1.039
+     },
+     {
+      "label": "+ transient goal 2",
+      "strict": 99.75,
+      "coarse": 99.9,
+      "EN": 1.044
+     },
+     {
+      "label": "+ transient goal 3",
+      "strict": 99.75,
+      "coarse": 99.9,
+      "EN": 1.046
+     },
+     {
+      "label": "+ transient goal 4",
+      "strict": 99.85,
+      "coarse": 99.9,
+      "EN": 1.048
+     },
+     {
+      "label": "+ transient goal 5",
+      "strict": 99.85,
+      "coarse": 99.9,
+      "EN": 1.05
+     },
+     {
+      "label": "+ transient goal 6",
+      "strict": 99.85,
+      "coarse": 99.9,
+      "EN": 1.052
+     },
+     {
+      "label": "+ transient goal 7",
+      "strict": 99.85,
+      "coarse": 99.9,
+      "EN": 1.053
+     }
+    ],
+    "strict": 99.85,
+    "coarse_delivered": 99.9,
+    "pos_median_mm": 0.0855,
+    "ori_median_deg": 0.0299,
+    "EN": 1.053
+   },
+   "source": "runs/sac+dls/so101/20261104_042133/checkpoints/best_model.pt",
+   "eval_time_s": 2.5
+  },
+  "policyik": {
+   "single": {
+    "strict": 98.85,
+    "coarse": 99.15,
+    "entry": 98.85,
+    "containment": 98.85,
+    "uncontained_after_entry": 0.0,
+    "entry_time_s": 0.4333,
+    "drift_um": 0.0906,
+    "drift_deg": 0.0,
+    "pos_mean_mm": 2.2917,
+    "pos_median_mm": 0.0476,
+    "ori_mean_deg": 0.7548,
+    "ori_median_deg": 0.0106,
+    "refined_strict": 99.05,
+    "refined_0.1mm": 96.0
+   },
+   "corrected_calls": 7,
+   "corrected_rescued": 0,
+   "deployment": {
+    "steps": [
+     {
+      "label": "single attempt",
+      "strict": 98.85,
+      "coarse": 99.15,
+      "EN": 1.0
+     },
+     {
+      "label": "+ error-corrected goal",
+      "strict": 98.85,
+      "coarse": 99.15,
+      "EN": 1.004
+     },
+     {
+      "label": "+ transient goal 0",
+      "strict": 99.15,
+      "coarse": 99.35,
+      "EN": 1.015
+     },
+     {
+      "label": "+ transient goal 1",
+      "strict": 99.55,
+      "coarse": 99.65,
+      "EN": 1.024
+     },
+     {
+      "label": "+ transient goal 2",
+      "strict": 99.6,
+      "coarse": 99.75,
+      "EN": 1.028
+     },
+     {
+      "label": "+ transient goal 3",
+      "strict": 99.7,
+      "coarse": 99.75,
+      "EN": 1.032
+     },
+     {
+      "label": "+ transient goal 4",
+      "strict": 99.7,
+      "coarse": 99.75,
+      "EN": 1.035
+     },
+     {
+      "label": "+ transient goal 5",
+      "strict": 99.8,
+      "coarse": 99.85,
+      "EN": 1.038
+     },
+     {
+      "label": "+ transient goal 6",
+      "strict": 99.85,
+      "coarse": 99.85,
+      "EN": 1.04
+     },
+     {
+      "label": "+ transient goal 7",
+      "strict": 99.85,
+      "coarse": 99.85,
+      "EN": 1.042
+     }
+    ],
+    "strict": 99.85,
+    "coarse_delivered": 99.85,
+    "pos_median_mm": 0.0473,
+    "ori_median_deg": 0.0106,
+    "EN": 1.0415
+   },
+   "source": "runs/policyik/so101/20261107_230000/checkpoints/best_model.pt",
+   "eval_time_s": 4.5
+  },
+  "dls": {
+   "single": {
+    "strict": 67.0,
+    "coarse": 67.9,
+    "entry": 67.95,
+    "containment": 66.7,
+    "uncontained_after_entry": 1.8396,
+    "entry_time_s": 1.4333,
+    "drift_um": 0.0601,
+    "drift_deg": 0.0,
+    "pos_mean_mm": 47.3281,
+    "pos_median_mm": 0.0001,
+    "ori_mean_deg": 21.8169,
+    "ori_median_deg": 0.0,
+    "refined_strict": 69.9,
+    "refined_0.1mm": 66.45
+   },
+   "corrected_calls": 42,
+   "corrected_rescued": 3,
+   "deployment": {
+    "steps": [
+     {
+      "label": "single attempt",
+      "strict": 67.0,
+      "coarse": 67.9,
+      "EN": 1.0
+     },
+     {
+      "label": "+ error-corrected goal",
+      "strict": 67.15,
+      "coarse": 67.9,
+      "EN": 1.021
+     },
+     {
+      "label": "+ transient goal 0",
+      "strict": 73.0,
+      "coarse": 73.7,
+      "EN": 1.35
+     },
+     {
+      "label": "+ transient goal 1",
+      "strict": 76.4,
+      "coarse": 77.05,
+      "EN": 1.62
+     },
+     {
+      "label": "+ transient goal 2",
+      "strict": 80.1,
+      "coarse": 80.85,
+      "EN": 1.856
+     },
+     {
+      "label": "+ transient goal 3",
+      "strict": 82.4,
+      "coarse": 83.25,
+      "EN": 2.054
+     },
+     {
+      "label": "+ transient goal 4",
+      "strict": 84.1,
+      "coarse": 84.95,
+      "EN": 2.23
+     },
+     {
+      "label": "+ transient goal 5",
+      "strict": 85.55,
+      "coarse": 86.3,
+      "EN": 2.39
+     },
+     {
+      "label": "+ transient goal 6",
+      "strict": 87.1,
+      "coarse": 87.7,
+      "EN": 2.534
+     },
+     {
+      "label": "+ transient goal 7",
+      "strict": 87.8,
+      "coarse": 88.35,
+      "EN": 2.663
+     }
+    ],
+    "strict": 87.8,
+    "coarse_delivered": 87.85,
+    "pos_median_mm": 0.0,
+    "ori_median_deg": 0.0,
+    "EN": 2.663
+   },
+   "source": "damping 0.05, max step 0.0625 rad",
+   "eval_time_s": 2.8
+  }
+ }
+}

@@ -1,0 +1,28 @@
+{
+  "checkpoint": "runs/policyik/so101/20261107_230000/checkpoints/best_model.pt",
+  "robot": "so101",
+  "method": "PolicyIK",
+  "num_tests": 500,
+  "num_restarts": 1,
+  "max_steps": 120,
+  "refine": false,
+  "success_rate_5mm_2.86deg_pct": 99.2,
+  "success_rate_2mm_1.15deg_pct": 98.8,
+  "success_rate_0.1mm_0.001deg_pct": 0.0,
+  "pos_err_mm": {
+    "mean": 2.143,
+    "median": 1.526,
+    "p95": 1.959,
+    "max": 186.742
+  },
+  "rot_err_deg": {
+    "mean": 0.711,
+    "median": 0.251,
+    "p95": 0.932,
+    "max": 163.226
+  },
+  "mean_steps": 11.99,
+  "mean_refine_iters": 0.0,
+  "mean_solve_time_ms": 6.66,
+  "solve_time_note": "single solve() calls on the first 100 targets"
+}

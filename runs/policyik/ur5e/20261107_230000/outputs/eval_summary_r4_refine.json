@@ -1,0 +1,28 @@
+{
+  "checkpoint": "runs/policyik/ur5e/20261107_230000/checkpoints/best_model.pt",
+  "robot": "ur5e",
+  "method": "PolicyIK",
+  "num_tests": 500,
+  "num_restarts": 4,
+  "max_steps": 120,
+  "refine": true,
+  "success_rate_5mm_2.86deg_pct": 97.6,
+  "success_rate_2mm_1.15deg_pct": 97.4,
+  "success_rate_0.1mm_0.001deg_pct": 97.0,
+  "pos_err_mm": {
+    "mean": 0.683,
+    "median": 0.0,
+    "p95": 0.024,
+    "max": 138.404
+  },
+  "rot_err_deg": {
+    "mean": 0.063,
+    "median": 0.0,
+    "p95": 0.001,
+    "max": 11.522
+  },
+  "mean_steps": 18.92,
+  "mean_refine_iters": 4.87,
+  "mean_solve_time_ms": 11.85,
+  "solve_time_note": "single solve() calls on the first 100 targets"
+}

@@ -1,0 +1,327 @@
+Warp 1.19.0 initialized:
+   CUDA Toolkit 13.4, Driver 13.0
+   Devices:
+     "cpu"      : "x86_64"
+     "cuda:0"   : "NVIDIA GeForce RTX 4090" (24 GiB, sm_89, mempool enabled)
+   Kernel cache:
+     /home/congfu/.cache/warp/1.19.0
+Module mujoco_warp._src.smooth 6847a03 load on device 'cuda:0' took 0.90 ms  (cached)
+Module _nxn_broadphase__locals__kernel_0dcff9d2 0dcff9d load on device 'cuda:0' took 0.63 ms  (cached)
+Module _nxn_broadphase__locals__kernel_0dcff9d2 1c34f5a load on device 'cuda:0' took 0.34 ms  (cached)
+Module ccd_kernel_builder__locals__ccd_kernel_95f10f65 95f10f6 load on device 'cuda:0' took 0.70 ms  (cached)
+Module _primitive_narrowphase__locals__primitive_narrowphase_4fb06a47 4fb06a4 load on device 'cuda:0' took 1.42 ms  (cached)
+Module ik_rl.policyik.kinematics ae360e8 load on device 'cuda:0' took 0.66 ms  (cached)
+[Init] Universal Robots UR5e: obs 44, act 6, 4096 envs, warp kinematics, pools built in 1.2s; run dir runs/policyik/ur5e/20261107_230000
+[ep    50] rew +0.0029 in_tol   0.0% kl 0.0152 lr 3.0e-03 std 1.052 c_loss 0.236 | 425k steps/s
+[ep   100] rew +0.0168 in_tol   0.0% kl 0.0159 lr 2.0e-03 std 0.916 c_loss 0.217 | 443k steps/s
+[ep   150] rew +0.0282 in_tol   0.6% kl 0.0157 lr 1.3e-03 std 0.861 c_loss 0.149 | 443k steps/s
+[ep   200] rew +0.0190 in_tol   2.0% kl 0.0157 lr 8.8e-04 std 0.795 c_loss 0.104 | 467k steps/s
+[ep   250] rew +0.0319 in_tol   5.9% kl 0.0158 lr 8.8e-04 std 0.690 c_loss 0.119 | 464k steps/s
+[eval 250] strict 16.0% coarse 53.2% entry 21.4% pos med 7.224 mm ori med 0.726 deg
+[ep   300] rew +0.0359 in_tol   9.0% kl 0.0154 lr 5.9e-04 std 0.672 c_loss 0.136 | 431k steps/s
+[ep   350] rew +0.0409 in_tol  11.6% kl 0.0152 lr 8.8e-04 std 0.664 c_loss 0.126 | 446k steps/s
+[ep   400] rew +0.0421 in_tol  15.1% kl 0.0155 lr 8.8e-04 std 0.658 c_loss 0.129 | 445k steps/s
+[ep   450] rew +0.0469 in_tol  18.6% kl 0.0143 lr 5.9e-04 std 0.669 c_loss 0.128 | 344k steps/s
+[ep   500] rew +0.0474 in_tol  20.2% kl 0.0155 lr 8.8e-04 std 0.674 c_loss 0.122 | 337k steps/s
+[eval 500] strict 50.8% coarse 68.8% entry 53.4% pos med 0.629 mm ori med 0.119 deg
+[ep   550] rew +0.0496 in_tol  23.2% kl 0.0159 lr 5.9e-04 std 0.675 c_loss 0.124 | 322k steps/s
+[ep   600] rew +0.0502 in_tol  24.5% kl 0.0152 lr 3.9e-04 std 0.677 c_loss 0.122 | 336k steps/s
+[ep   650] rew +0.0522 in_tol  26.8% kl 0.0154 lr 8.8e-04 std 0.677 c_loss 0.120 | 333k steps/s
+[ep   700] rew +0.0532 in_tol  29.2% kl 0.0152 lr 5.9e-04 std 0.685 c_loss 0.118 | 332k steps/s
+[ep   750] rew +0.0531 in_tol  28.6% kl 0.0159 lr 5.9e-04 std 0.696 c_loss 0.120 | 331k steps/s
+[eval 750] strict 60.8% coarse 73.6% entry 62.8% pos med 0.408 mm ori med 0.088 deg
+[ep   800] rew +0.0552 in_tol  32.2% kl 0.0159 lr 5.9e-04 std 0.702 c_loss 0.119 | 322k steps/s
+[ep   850] rew +0.0555 in_tol  33.0% kl 0.0144 lr 3.9e-04 std 0.703 c_loss 0.122 | 333k steps/s
+[ep   900] rew +0.0567 in_tol  34.3% kl 0.0152 lr 5.9e-04 std 0.712 c_loss 0.119 | 332k steps/s
+[ep   950] rew +0.0563 in_tol  33.8% kl 0.0154 lr 5.9e-04 std 0.705 c_loss 0.119 | 333k steps/s
+[ep  1000] rew +0.0586 in_tol  35.8% kl 0.0157 lr 3.9e-04 std 0.708 c_loss 0.125 | 339k steps/s
+[eval 1000] strict 67.4% coarse 76.2% entry 69.0% pos med 0.313 mm ori med 0.076 deg
+[ep  1050] rew +0.0587 in_tol  36.0% kl 0.0143 lr 5.9e-04 std 0.704 c_loss 0.122 | 327k steps/s
+[ep  1100] rew +0.0596 in_tol  36.5% kl 0.0145 lr 3.9e-04 std 0.700 c_loss 0.120 | 337k steps/s
+[ep  1150] rew +0.0589 in_tol  36.8% kl 0.0153 lr 2.6e-04 std 0.699 c_loss 0.127 | 338k steps/s
+[ep  1200] rew +0.0615 in_tol  38.6% kl 0.0168 lr 3.9e-04 std 0.696 c_loss 0.123 | 339k steps/s
+[ep  1250] rew +0.0614 in_tol  39.1% kl 0.0127 lr 5.9e-04 std 0.711 c_loss 0.121 | 341k steps/s
+[eval 1250] strict 72.8% coarse 80.0% entry 74.0% pos med 0.269 mm ori med 0.070 deg
+[ep  1300] rew +0.0623 in_tol  40.2% kl 0.0144 lr 3.9e-04 std 0.700 c_loss 0.126 | 324k steps/s
+[ep  1350] rew +0.0612 in_tol  39.7% kl 0.0160 lr 2.6e-04 std 0.703 c_loss 0.122 | 339k steps/s
+[ep  1400] rew +0.0629 in_tol  41.8% kl 0.0148 lr 3.9e-04 std 0.707 c_loss 0.121 | 340k steps/s
+[ep  1450] rew +0.0626 in_tol  40.7% kl 0.0151 lr 3.9e-04 std 0.704 c_loss 0.126 | 337k steps/s
+[ep  1500] rew +0.0625 in_tol  42.0% kl 0.0122 lr 5.9e-04 std 0.710 c_loss 0.127 | 338k steps/s
+[eval 1500] strict 74.8% coarse 80.4% entry 76.0% pos med 0.244 mm ori med 0.067 deg
+[ep  1550] rew +0.0637 in_tol  42.7% kl 0.0150 lr 3.9e-04 std 0.711 c_loss 0.129 | 323k steps/s
+[ep  1600] rew +0.0644 in_tol  42.3% kl 0.0149 lr 5.9e-04 std 0.698 c_loss 0.129 | 334k steps/s
+[ep  1650] rew +0.0636 in_tol  42.0% kl 0.0145 lr 5.9e-04 std 0.705 c_loss 0.129 | 338k steps/s
+[ep  1700] rew +0.0651 in_tol  44.1% kl 0.0150 lr 3.9e-04 std 0.707 c_loss 0.127 | 337k steps/s
+[ep  1750] rew +0.0651 in_tol  43.5% kl 0.0154 lr 3.9e-04 std 0.712 c_loss 0.132 | 336k steps/s
+[eval 1750] strict 77.8% coarse 84.0% entry 78.8% pos med 0.241 mm ori med 0.065 deg
+[ep  1800] rew +0.0644 in_tol  43.1% kl 0.0156 lr 3.9e-04 std 0.715 c_loss 0.134 | 322k steps/s
+[ep  1850] rew +0.0643 in_tol  43.8% kl 0.0148 lr 2.6e-04 std 0.723 c_loss 0.128 | 339k steps/s
+[ep  1900] rew +0.0660 in_tol  44.8% kl 0.0145 lr 3.9e-04 std 0.719 c_loss 0.130 | 337k steps/s
+[ep  1950] rew +0.0655 in_tol  44.7% kl 0.0123 lr 5.9e-04 std 0.718 c_loss 0.135 | 334k steps/s
+[ep  2000] rew +0.0655 in_tol  44.4% kl 0.0116 lr 5.9e-04 std 0.718 c_loss 0.128 | 337k steps/s
+[eval 2000] strict 75.2% coarse 82.0% entry 76.0% pos med 0.278 mm ori med 0.063 deg
+[ep  2050] rew +0.0651 in_tol  44.1% kl 0.0148 lr 3.9e-04 std 0.718 c_loss 0.134 | 330k steps/s
+[ep  2100] rew +0.0655 in_tol  45.6% kl 0.0144 lr 2.6e-04 std 0.716 c_loss 0.135 | 354k steps/s
+[ep  2150] rew +0.0672 in_tol  47.4% kl 0.0148 lr 3.9e-04 std 0.715 c_loss 0.133 | 348k steps/s
+[ep  2200] rew +0.0667 in_tol  46.9% kl 0.0150 lr 2.6e-04 std 0.718 c_loss 0.136 | 352k steps/s
+[ep  2250] rew +0.0661 in_tol  46.7% kl 0.0156 lr 2.6e-04 std 0.717 c_loss 0.134 | 344k steps/s
+[eval 2250] strict 79.0% coarse 84.6% entry 79.8% pos med 0.247 mm ori med 0.058 deg
+[ep  2300] rew +0.0677 in_tol  49.0% kl 0.0143 lr 3.9e-04 std 0.709 c_loss 0.140 | 330k steps/s
+[ep  2350] rew +0.0666 in_tol  46.5% kl 0.0160 lr 3.9e-04 std 0.721 c_loss 0.143 | 340k steps/s
+[ep  2400] rew +0.0674 in_tol  47.3% kl 0.0132 lr 5.9e-04 std 0.721 c_loss 0.137 | 341k steps/s
+[ep  2450] rew +0.0656 in_tol  45.7% kl 0.0148 lr 3.9e-04 std 0.733 c_loss 0.137 | 316k steps/s
+[ep  2500] rew +0.0674 in_tol  46.0% kl 0.0159 lr 3.9e-04 std 0.722 c_loss 0.146 | 330k steps/s
+[eval 2500] strict 81.8% coarse 87.6% entry 82.2% pos med 0.253 mm ori med 0.072 deg
+[ep  2550] rew +0.0682 in_tol  47.9% kl 0.0150 lr 5.9e-04 std 0.717 c_loss 0.141 | 318k steps/s
+[ep  2600] rew +0.0672 in_tol  47.9% kl 0.0126 lr 5.9e-04 std 0.719 c_loss 0.141 | 333k steps/s
+[ep  2650] rew +0.0675 in_tol  49.1% kl 0.0147 lr 5.9e-04 std 0.721 c_loss 0.138 | 330k steps/s
+[ep  2700] rew +0.0682 in_tol  48.6% kl 0.0150 lr 2.6e-04 std 0.722 c_loss 0.143 | 328k steps/s
+[ep  2750] rew +0.0692 in_tol  48.6% kl 0.0156 lr 5.9e-04 std 0.713 c_loss 0.140 | 331k steps/s
+[eval 2750] strict 80.6% coarse 86.4% entry 81.0% pos med 0.239 mm ori med 0.060 deg
+[ep  2800] rew +0.0697 in_tol  48.7% kl 0.0156 lr 2.6e-04 std 0.708 c_loss 0.157 | 320k steps/s
+[ep  2850] rew +0.0689 in_tol  49.0% kl 0.0152 lr 3.9e-04 std 0.719 c_loss 0.145 | 324k steps/s
+[ep  2900] rew +0.0687 in_tol  49.0% kl 0.0126 lr 5.9e-04 std 0.723 c_loss 0.142 | 333k steps/s
+[ep  2950] rew +0.0683 in_tol  49.1% kl 0.0155 lr 3.9e-04 std 0.718 c_loss 0.144 | 335k steps/s
+[ep  3000] rew +0.0703 in_tol  49.5% kl 0.0150 lr 3.9e-04 std 0.723 c_loss 0.148 | 333k steps/s
+[eval 3000] strict 80.2% coarse 84.8% entry 80.6% pos med 0.225 mm ori med 0.055 deg
+[ep  3050] rew +0.0695 in_tol  48.6% kl 0.0152 lr 3.9e-04 std 0.726 c_loss 0.147 | 309k steps/s
+[ep  3100] rew +0.0686 in_tol  49.8% kl 0.0140 lr 2.6e-04 std 0.723 c_loss 0.152 | 341k steps/s
+[ep  3150] rew +0.0704 in_tol  51.1% kl 0.0137 lr 2.6e-04 std 0.717 c_loss 0.149 | 335k steps/s
+[ep  3200] rew +0.0700 in_tol  51.1% kl 0.0128 lr 2.6e-04 std 0.710 c_loss 0.154 | 331k steps/s
+[ep  3250] rew +0.0692 in_tol  49.4% kl 0.0135 lr 5.9e-04 std 0.715 c_loss 0.156 | 338k steps/s
+[eval 3250] strict 81.4% coarse 86.0% entry 82.0% pos med 0.245 mm ori med 0.062 deg
+[ep  3300] rew +0.0689 in_tol  49.2% kl 0.0141 lr 3.9e-04 std 0.722 c_loss 0.156 | 321k steps/s
+[ep  3350] rew +0.0693 in_tol  51.2% kl 0.0160 lr 1.2e-04 std 0.724 c_loss 0.146 | 337k steps/s
+[ep  3400] rew +0.0687 in_tol  49.7% kl 0.0171 lr 2.6e-04 std 0.721 c_loss 0.156 | 342k steps/s
+[ep  3450] rew +0.0703 in_tol  51.1% kl 0.0155 lr 5.9e-04 std 0.718 c_loss 0.153 | 340k steps/s
+[ep  3500] rew +0.0699 in_tol  50.2% kl 0.0131 lr 3.9e-04 std 0.724 c_loss 0.150 | 340k steps/s
+[eval 3500] strict 82.6% coarse 87.4% entry 83.2% pos med 0.230 mm ori med 0.060 deg
+[ep  3550] rew +0.0709 in_tol  51.3% kl 0.0134 lr 2.6e-04 std 0.721 c_loss 0.160 | 325k steps/s
+[ep  3600] rew +0.0689 in_tol  50.0% kl 0.0137 lr 5.9e-04 std 0.723 c_loss 0.158 | 340k steps/s
+[ep  3650] rew +0.0695 in_tol  51.2% kl 0.0171 lr 5.9e-04 std 0.732 c_loss 0.149 | 340k steps/s
+[ep  3700] rew +0.0696 in_tol  50.7% kl 0.0148 lr 5.9e-04 std 0.722 c_loss 0.161 | 343k steps/s
+[ep  3750] rew +0.0716 in_tol  52.2% kl 0.0123 lr 5.9e-04 std 0.716 c_loss 0.169 | 339k steps/s
+[eval 3750] strict 82.6% coarse 87.2% entry 83.0% pos med 0.241 mm ori med 0.068 deg
+[ep  3800] rew +0.0710 in_tol  52.2% kl 0.0152 lr 2.6e-04 std 0.713 c_loss 0.160 | 324k steps/s
+[ep  3850] rew +0.0714 in_tol  51.6% kl 0.0149 lr 2.6e-04 std 0.718 c_loss 0.156 | 343k steps/s
+[ep  3900] rew +0.0721 in_tol  52.3% kl 0.0140 lr 5.9e-04 std 0.719 c_loss 0.156 | 341k steps/s
+[ep  3950] rew +0.0699 in_tol  51.2% kl 0.0157 lr 5.9e-04 std 0.729 c_loss 0.164 | 338k steps/s
+[ep  4000] rew +0.0694 in_tol  51.1% kl 0.0138 lr 3.9e-04 std 0.726 c_loss 0.159 | 339k steps/s
+[eval 4000] strict 82.2% coarse 88.4% entry 82.6% pos med 0.248 mm ori med 0.062 deg
+[ep  4050] rew +0.0708 in_tol  51.7% kl 0.0128 lr 5.9e-04 std 0.726 c_loss 0.159 | 342k steps/s
+[ep  4100] rew +0.0714 in_tol  53.1% kl 0.0126 lr 5.9e-04 std 0.726 c_loss 0.158 | 360k steps/s
+[ep  4150] rew +0.0711 in_tol  54.2% kl 0.0128 lr 3.9e-04 std 0.720 c_loss 0.164 | 357k steps/s
+[ep  4200] rew +0.0724 in_tol  53.8% kl 0.0153 lr 1.7e-04 std 0.725 c_loss 0.159 | 353k steps/s
+[ep  4250] rew +0.0706 in_tol  51.8% kl 0.0134 lr 5.9e-04 std 0.725 c_loss 0.157 | 350k steps/s
+[eval 4250] strict 82.4% coarse 87.6% entry 83.2% pos med 0.262 mm ori med 0.062 deg
+[ep  4300] rew +0.0690 in_tol  50.5% kl 0.0155 lr 2.6e-04 std 0.734 c_loss 0.164 | 335k steps/s
+[ep  4350] rew +0.0725 in_tol  53.8% kl 0.0141 lr 5.9e-04 std 0.723 c_loss 0.168 | 342k steps/s
+[ep  4400] rew +0.0716 in_tol  53.6% kl 0.0143 lr 5.9e-04 std 0.724 c_loss 0.159 | 340k steps/s
+[ep  4450] rew +0.0718 in_tol  52.9% kl 0.0144 lr 2.6e-04 std 0.728 c_loss 0.166 | 336k steps/s
+[ep  4500] rew +0.0717 in_tol  51.9% kl 0.0148 lr 1.7e-04 std 0.725 c_loss 0.172 | 338k steps/s
+[eval 4500] strict 82.6% coarse 87.0% entry 83.2% pos med 0.253 mm ori med 0.061 deg
+[ep  4550] rew +0.0705 in_tol  51.3% kl 0.0150 lr 2.6e-04 std 0.731 c_loss 0.167 | 327k steps/s
+[ep  4600] rew +0.0721 in_tol  53.2% kl 0.0144 lr 3.9e-04 std 0.731 c_loss 0.165 | 339k steps/s
+[ep  4650] rew +0.0726 in_tol  54.0% kl 0.0137 lr 3.9e-04 std 0.728 c_loss 0.174 | 338k steps/s
+[ep  4700] rew +0.0712 in_tol  52.0% kl 0.0133 lr 2.6e-04 std 0.720 c_loss 0.166 | 340k steps/s
+[ep  4750] rew +0.0717 in_tol  53.7% kl 0.0153 lr 2.6e-04 std 0.733 c_loss 0.176 | 342k steps/s
+[eval 4750] strict 82.2% coarse 87.0% entry 83.0% pos med 0.237 mm ori med 0.060 deg
+[ep  4800] rew +0.0715 in_tol  53.4% kl 0.0155 lr 3.9e-04 std 0.734 c_loss 0.167 | 324k steps/s
+[ep  4850] rew +0.0736 in_tol  54.5% kl 0.0147 lr 3.9e-04 std 0.731 c_loss 0.167 | 339k steps/s
+[ep  4900] rew +0.0718 in_tol  54.5% kl 0.0154 lr 1.7e-04 std 0.736 c_loss 0.174 | 339k steps/s
+[ep  4950] rew +0.0726 in_tol  55.1% kl 0.0151 lr 2.6e-04 std 0.729 c_loss 0.167 | 338k steps/s
+[ep  5000] rew +0.0719 in_tol  54.6% kl 0.0158 lr 1.7e-04 std 0.725 c_loss 0.172 | 342k steps/s
+[eval 5000] strict 84.4% coarse 88.6% entry 85.0% pos med 0.198 mm ori med 0.054 deg
+[ep  5050] rew +0.0723 in_tol  55.2% kl 0.0131 lr 5.9e-04 std 0.725 c_loss 0.173 | 328k steps/s
+[ep  5100] rew +0.0723 in_tol  54.6% kl 0.0151 lr 3.9e-04 std 0.729 c_loss 0.164 | 342k steps/s
+[ep  5150] rew +0.0729 in_tol  55.3% kl 0.0118 lr 2.6e-04 std 0.731 c_loss 0.171 | 345k steps/s
+[ep  5200] rew +0.0726 in_tol  54.8% kl 0.0142 lr 5.9e-04 std 0.734 c_loss 0.174 | 341k steps/s
+[ep  5250] rew +0.0713 in_tol  53.2% kl 0.0134 lr 5.9e-04 std 0.733 c_loss 0.172 | 340k steps/s
+[eval 5250] strict 82.2% coarse 87.4% entry 83.2% pos med 0.214 mm ori med 0.061 deg
+[ep  5300] rew +0.0728 in_tol  55.0% kl 0.0154 lr 5.9e-04 std 0.735 c_loss 0.172 | 328k steps/s
+[ep  5350] rew +0.0715 in_tol  53.8% kl 0.0162 lr 3.9e-04 std 0.739 c_loss 0.177 | 338k steps/s
+[ep  5400] rew +0.0721 in_tol  53.2% kl 0.0141 lr 5.9e-04 std 0.734 c_loss 0.172 | 338k steps/s
+[ep  5450] rew +0.0721 in_tol  54.7% kl 0.0163 lr 1.7e-04 std 0.736 c_loss 0.170 | 338k steps/s
+[ep  5500] rew +0.0710 in_tol  54.6% kl 0.0143 lr 3.9e-04 std 0.738 c_loss 0.180 | 338k steps/s
+[eval 5500] strict 84.4% coarse 89.6% entry 85.2% pos med 0.215 mm ori med 0.054 deg
+[ep  5550] rew +0.0720 in_tol  54.9% kl 0.0144 lr 3.9e-04 std 0.730 c_loss 0.180 | 323k steps/s
+[ep  5600] rew +0.0713 in_tol  54.7% kl 0.0161 lr 3.9e-04 std 0.723 c_loss 0.173 | 336k steps/s
+[ep  5650] rew +0.0731 in_tol  55.4% kl 0.0149 lr 1.7e-04 std 0.720 c_loss 0.175 | 340k steps/s
+[ep  5700] rew +0.0726 in_tol  54.0% kl 0.0142 lr 5.9e-04 std 0.719 c_loss 0.174 | 339k steps/s
+[ep  5750] rew +0.0734 in_tol  55.5% kl 0.0161 lr 3.9e-04 std 0.729 c_loss 0.177 | 342k steps/s
+[eval 5750] strict 85.6% coarse 90.4% entry 86.0% pos med 0.250 mm ori med 0.057 deg
+[ep  5800] rew +0.0732 in_tol  55.5% kl 0.0132 lr 5.9e-04 std 0.726 c_loss 0.181 | 325k steps/s
+[ep  5850] rew +0.0710 in_tol  53.9% kl 0.0135 lr 3.9e-04 std 0.728 c_loss 0.172 | 341k steps/s
+[ep  5900] rew +0.0730 in_tol  54.8% kl 0.0127 lr 3.9e-04 std 0.735 c_loss 0.168 | 337k steps/s
+[ep  5950] rew +0.0720 in_tol  53.6% kl 0.0137 lr 5.9e-04 std 0.735 c_loss 0.174 | 346k steps/s
+[ep  6000] rew +0.0730 in_tol  54.8% kl 0.0153 lr 2.6e-04 std 0.727 c_loss 0.180 | 356k steps/s
+[eval 6000] strict 82.6% coarse 87.6% entry 83.0% pos med 0.278 mm ori med 0.056 deg
+[ep  6050] rew +0.0722 in_tol  54.2% kl 0.0155 lr 3.9e-04 std 0.732 c_loss 0.172 | 341k steps/s
+[ep  6100] rew +0.0719 in_tol  53.2% kl 0.0146 lr 1.2e-04 std 0.734 c_loss 0.180 | 352k steps/s
+[ep  6150] rew +0.0723 in_tol  53.5% kl 0.0159 lr 2.6e-04 std 0.732 c_loss 0.179 | 349k steps/s
+[ep  6200] rew +0.0727 in_tol  54.7% kl 0.0138 lr 5.9e-04 std 0.736 c_loss 0.175 | 345k steps/s
+[ep  6250] rew +0.0723 in_tol  54.6% kl 0.0137 lr 1.7e-04 std 0.735 c_loss 0.177 | 349k steps/s
+[eval 6250] strict 82.8% coarse 89.0% entry 84.6% pos med 0.271 mm ori med 0.057 deg
+[ep  6300] rew +0.0727 in_tol  56.2% kl 0.0147 lr 3.9e-04 std 0.729 c_loss 0.187 | 328k steps/s
+[ep  6350] rew +0.0728 in_tol  55.0% kl 0.0160 lr 1.7e-04 std 0.733 c_loss 0.183 | 339k steps/s
+[ep  6400] rew +0.0728 in_tol  55.9% kl 0.0133 lr 5.9e-04 std 0.726 c_loss 0.185 | 339k steps/s
+[ep  6450] rew +0.0722 in_tol  54.8% kl 0.0152 lr 2.6e-04 std 0.732 c_loss 0.178 | 340k steps/s
+[ep  6500] rew +0.0728 in_tol  55.5% kl 0.0151 lr 3.9e-04 std 0.737 c_loss 0.174 | 337k steps/s
+[eval 6500] strict 83.8% coarse 89.0% entry 84.4% pos med 0.250 mm ori med 0.056 deg
+[ep  6550] rew +0.0728 in_tol  54.7% kl 0.0145 lr 2.6e-04 std 0.730 c_loss 0.183 | 327k steps/s
+[ep  6600] rew +0.0731 in_tol  55.7% kl 0.0180 lr 1.2e-04 std 0.737 c_loss 0.181 | 340k steps/s
+[ep  6650] rew +0.0731 in_tol  54.7% kl 0.0144 lr 2.6e-04 std 0.730 c_loss 0.181 | 341k steps/s
+[ep  6700] rew +0.0733 in_tol  56.0% kl 0.0127 lr 5.9e-04 std 0.726 c_loss 0.186 | 338k steps/s
+[ep  6750] rew +0.0743 in_tol  57.3% kl 0.0141 lr 2.6e-04 std 0.730 c_loss 0.181 | 337k steps/s
+[eval 6750] strict 85.2% coarse 89.8% entry 86.0% pos med 0.220 mm ori med 0.056 deg
+[ep  6800] rew +0.0730 in_tol  54.8% kl 0.0150 lr 2.6e-04 std 0.736 c_loss 0.184 | 324k steps/s
+[ep  6850] rew +0.0725 in_tol  55.0% kl 0.0158 lr 5.9e-04 std 0.735 c_loss 0.184 | 338k steps/s
+[ep  6900] rew +0.0723 in_tol  54.4% kl 0.0134 lr 2.6e-04 std 0.746 c_loss 0.184 | 339k steps/s
+[ep  6950] rew +0.0736 in_tol  56.5% kl 0.0124 lr 3.9e-04 std 0.737 c_loss 0.185 | 337k steps/s
+[ep  7000] rew +0.0735 in_tol  56.8% kl 0.0130 lr 5.9e-04 std 0.735 c_loss 0.197 | 337k steps/s
+[eval 7000] strict 84.6% coarse 88.8% entry 85.6% pos med 0.216 mm ori med 0.053 deg
+[ep  7050] rew +0.0734 in_tol  55.7% kl 0.0154 lr 2.6e-04 std 0.739 c_loss 0.190 | 326k steps/s
+[ep  7100] rew +0.0727 in_tol  55.8% kl 0.0121 lr 3.9e-04 std 0.745 c_loss 0.181 | 341k steps/s
+[ep  7150] rew +0.0728 in_tol  55.4% kl 0.0146 lr 2.6e-04 std 0.746 c_loss 0.191 | 340k steps/s
+[ep  7200] rew +0.0743 in_tol  56.6% kl 0.0133 lr 5.9e-04 std 0.741 c_loss 0.188 | 341k steps/s
+[ep  7250] rew +0.0736 in_tol  56.4% kl 0.0165 lr 1.7e-04 std 0.728 c_loss 0.184 | 343k steps/s
+[eval 7250] strict 83.2% coarse 88.4% entry 83.6% pos med 0.224 mm ori med 0.053 deg
+[ep  7300] rew +0.0744 in_tol  57.1% kl 0.0154 lr 5.9e-04 std 0.728 c_loss 0.190 | 324k steps/s
+[ep  7350] rew +0.0739 in_tol  56.9% kl 0.0137 lr 5.9e-04 std 0.737 c_loss 0.189 | 339k steps/s
+[ep  7400] rew +0.0734 in_tol  55.7% kl 0.0158 lr 3.9e-04 std 0.739 c_loss 0.180 | 338k steps/s
+[ep  7450] rew +0.0724 in_tol  56.6% kl 0.0145 lr 2.6e-04 std 0.730 c_loss 0.191 | 342k steps/s
+[ep  7500] rew +0.0742 in_tol  57.2% kl 0.0151 lr 2.6e-04 std 0.732 c_loss 0.191 | 342k steps/s
+[eval 7500] strict 84.6% coarse 89.2% entry 85.8% pos med 0.262 mm ori med 0.058 deg
+[ep  7550] rew +0.0732 in_tol  56.2% kl 0.0136 lr 1.7e-04 std 0.737 c_loss 0.188 | 321k steps/s
+[ep  7600] rew +0.0745 in_tol  56.5% kl 0.0140 lr 2.6e-04 std 0.730 c_loss 0.196 | 340k steps/s
+[ep  7650] rew +0.0733 in_tol  56.8% kl 0.0141 lr 5.9e-04 std 0.734 c_loss 0.197 | 339k steps/s
+[ep  7700] rew +0.0738 in_tol  56.6% kl 0.0141 lr 2.6e-04 std 0.731 c_loss 0.190 | 342k steps/s
+[ep  7750] rew +0.0732 in_tol  56.5% kl 0.0155 lr 3.9e-04 std 0.737 c_loss 0.197 | 341k steps/s
+[eval 7750] strict 84.0% coarse 89.8% entry 85.0% pos med 0.233 mm ori med 0.057 deg
+[ep  7800] rew +0.0740 in_tol  58.0% kl 0.0153 lr 2.6e-04 std 0.743 c_loss 0.194 | 324k steps/s
+[ep  7850] rew +0.0739 in_tol  57.1% kl 0.0138 lr 3.9e-04 std 0.745 c_loss 0.187 | 341k steps/s
+[ep  7900] rew +0.0752 in_tol  58.3% kl 0.0137 lr 3.9e-04 std 0.731 c_loss 0.196 | 357k steps/s
+[ep  7950] rew +0.0744 in_tol  56.6% kl 0.0154 lr 3.9e-04 std 0.729 c_loss 0.189 | 357k steps/s
+[ep  8000] rew +0.0748 in_tol  57.1% kl 0.0149 lr 2.6e-04 std 0.731 c_loss 0.191 | 351k steps/s
+[eval 8000] strict 83.4% coarse 89.0% entry 84.6% pos med 0.249 mm ori med 0.059 deg
+[ep  8050] rew +0.0736 in_tol  56.9% kl 0.0131 lr 2.6e-04 std 0.740 c_loss 0.195 | 334k steps/s
+[ep  8100] rew +0.0743 in_tol  57.3% kl 0.0146 lr 3.9e-04 std 0.742 c_loss 0.194 | 351k steps/s
+[ep  8150] rew +0.0724 in_tol  55.3% kl 0.0144 lr 2.6e-04 std 0.750 c_loss 0.193 | 346k steps/s
+[ep  8200] rew +0.0729 in_tol  56.1% kl 0.0148 lr 5.9e-04 std 0.740 c_loss 0.189 | 340k steps/s
+[ep  8250] rew +0.0735 in_tol  56.8% kl 0.0143 lr 3.9e-04 std 0.742 c_loss 0.192 | 337k steps/s
+[eval 8250] strict 85.6% coarse 89.6% entry 86.4% pos med 0.223 mm ori med 0.058 deg
+[ep  8300] rew +0.0728 in_tol  56.0% kl 0.0145 lr 3.9e-04 std 0.737 c_loss 0.188 | 317k steps/s
+[ep  8350] rew +0.0746 in_tol  57.0% kl 0.0145 lr 5.9e-04 std 0.733 c_loss 0.201 | 323k steps/s
+[ep  8400] rew +0.0753 in_tol  56.9% kl 0.0125 lr 3.9e-04 std 0.738 c_loss 0.196 | 330k steps/s
+[ep  8450] rew +0.0730 in_tol  56.1% kl 0.0151 lr 2.6e-04 std 0.743 c_loss 0.201 | 322k steps/s
+[ep  8500] rew +0.0735 in_tol  56.8% kl 0.0150 lr 5.9e-04 std 0.739 c_loss 0.198 | 330k steps/s
+[eval 8500] strict 84.4% coarse 89.6% entry 84.8% pos med 0.230 mm ori med 0.054 deg
+[ep  8550] rew +0.0751 in_tol  57.0% kl 0.0156 lr 5.9e-04 std 0.734 c_loss 0.196 | 317k steps/s
+[ep  8600] rew +0.0741 in_tol  56.7% kl 0.0157 lr 3.9e-04 std 0.734 c_loss 0.200 | 334k steps/s
+[ep  8650] rew +0.0743 in_tol  57.7% kl 0.0141 lr 1.7e-04 std 0.743 c_loss 0.197 | 334k steps/s
+[ep  8700] rew +0.0726 in_tol  56.6% kl 0.0143 lr 5.9e-04 std 0.748 c_loss 0.199 | 335k steps/s
+[ep  8750] rew +0.0731 in_tol  56.7% kl 0.0159 lr 3.9e-04 std 0.741 c_loss 0.192 | 333k steps/s
+[eval 8750] strict 85.0% coarse 89.8% entry 85.4% pos med 0.230 mm ori med 0.056 deg
+[ep  8800] rew +0.0737 in_tol  55.9% kl 0.0141 lr 5.9e-04 std 0.734 c_loss 0.205 | 322k steps/s
+[ep  8850] rew +0.0747 in_tol  56.8% kl 0.0142 lr 5.9e-04 std 0.739 c_loss 0.202 | 333k steps/s
+[ep  8900] rew +0.0753 in_tol  56.5% kl 0.0156 lr 2.6e-04 std 0.737 c_loss 0.195 | 337k steps/s
+[ep  8950] rew +0.0746 in_tol  57.3% kl 0.0142 lr 5.9e-04 std 0.723 c_loss 0.203 | 331k steps/s
+[ep  9000] rew +0.0746 in_tol  57.8% kl 0.0143 lr 5.9e-04 std 0.723 c_loss 0.201 | 334k steps/s
+[eval 9000] strict 85.2% coarse 89.6% entry 85.8% pos med 0.223 mm ori med 0.057 deg
+[ep  9050] rew +0.0762 in_tol  58.4% kl 0.0138 lr 2.6e-04 std 0.728 c_loss 0.195 | 313k steps/s
+[ep  9100] rew +0.0742 in_tol  57.4% kl 0.0147 lr 2.6e-04 std 0.725 c_loss 0.203 | 332k steps/s
+[ep  9150] rew +0.0735 in_tol  57.7% kl 0.0144 lr 2.6e-04 std 0.747 c_loss 0.196 | 337k steps/s
+[ep  9200] rew +0.0742 in_tol  58.0% kl 0.0142 lr 5.9e-04 std 0.739 c_loss 0.191 | 333k steps/s
+[ep  9250] rew +0.0725 in_tol  57.5% kl 0.0120 lr 3.9e-04 std 0.738 c_loss 0.204 | 332k steps/s
+[eval 9250] strict 83.6% coarse 88.6% entry 84.4% pos med 0.262 mm ori med 0.059 deg
+[ep  9300] rew +0.0738 in_tol  57.4% kl 0.0166 lr 1.7e-04 std 0.737 c_loss 0.202 | 319k steps/s
+[ep  9350] rew +0.0742 in_tol  57.6% kl 0.0133 lr 1.7e-04 std 0.735 c_loss 0.195 | 332k steps/s
+[ep  9400] rew +0.0737 in_tol  57.5% kl 0.0145 lr 3.9e-04 std 0.740 c_loss 0.204 | 334k steps/s
+[ep  9450] rew +0.0742 in_tol  57.2% kl 0.0157 lr 3.9e-04 std 0.749 c_loss 0.196 | 338k steps/s
+[ep  9500] rew +0.0746 in_tol  57.5% kl 0.0163 lr 2.6e-04 std 0.744 c_loss 0.198 | 355k steps/s
+[eval 9500] strict 85.8% coarse 90.4% entry 86.6% pos med 0.208 mm ori med 0.054 deg
+[ep  9550] rew +0.0739 in_tol  58.6% kl 0.0148 lr 1.7e-04 std 0.743 c_loss 0.200 | 337k steps/s
+[ep  9600] rew +0.0735 in_tol  56.6% kl 0.0144 lr 2.6e-04 std 0.737 c_loss 0.201 | 343k steps/s
+[ep  9650] rew +0.0735 in_tol  56.0% kl 0.0156 lr 5.9e-04 std 0.734 c_loss 0.192 | 337k steps/s
+[ep  9700] rew +0.0732 in_tol  57.4% kl 0.0150 lr 2.6e-04 std 0.741 c_loss 0.207 | 331k steps/s
+[ep  9750] rew +0.0746 in_tol  57.9% kl 0.0151 lr 1.7e-04 std 0.735 c_loss 0.203 | 331k steps/s
+[eval 9750] strict 85.2% coarse 90.0% entry 86.0% pos med 0.268 mm ori med 0.058 deg
+[ep  9800] rew +0.0730 in_tol  57.4% kl 0.0158 lr 3.9e-04 std 0.742 c_loss 0.191 | 319k steps/s
+[ep  9850] rew +0.0746 in_tol  57.4% kl 0.0152 lr 2.6e-04 std 0.736 c_loss 0.202 | 332k steps/s
+[ep  9900] rew +0.0738 in_tol  56.4% kl 0.0110 lr 3.9e-04 std 0.742 c_loss 0.201 | 332k steps/s
+[ep  9950] rew +0.0739 in_tol  57.2% kl 0.0157 lr 2.6e-04 std 0.741 c_loss 0.200 | 328k steps/s
+[ep 10000] rew +0.0746 in_tol  58.6% kl 0.0149 lr 3.9e-04 std 0.733 c_loss 0.203 | 325k steps/s
+[eval 10000] strict 83.2% coarse 88.6% entry 84.4% pos med 0.252 mm ori med 0.060 deg
+[ep 10050] rew +0.0744 in_tol  58.2% kl 0.0141 lr 2.6e-04 std 0.728 c_loss 0.204 | 318k steps/s
+[ep 10100] rew +0.0746 in_tol  57.7% kl 0.0134 lr 3.9e-04 std 0.739 c_loss 0.199 | 330k steps/s
+[ep 10150] rew +0.0733 in_tol  56.8% kl 0.0149 lr 2.6e-04 std 0.747 c_loss 0.206 | 328k steps/s
+[ep 10200] rew +0.0738 in_tol  58.1% kl 0.0137 lr 5.9e-04 std 0.744 c_loss 0.203 | 333k steps/s
+[ep 10250] rew +0.0742 in_tol  57.7% kl 0.0139 lr 2.6e-04 std 0.740 c_loss 0.205 | 324k steps/s
+[eval 10250] strict 85.0% coarse 90.2% entry 85.6% pos med 0.228 mm ori med 0.052 deg
+[ep 10300] rew +0.0738 in_tol  57.8% kl 0.0129 lr 3.9e-04 std 0.743 c_loss 0.203 | 310k steps/s
+[ep 10350] rew +0.0741 in_tol  57.6% kl 0.0174 lr 1.7e-04 std 0.739 c_loss 0.205 | 329k steps/s
+[ep 10400] rew +0.0752 in_tol  57.5% kl 0.0144 lr 5.9e-04 std 0.729 c_loss 0.206 | 333k steps/s
+[ep 10450] rew +0.0749 in_tol  57.9% kl 0.0156 lr 3.9e-04 std 0.731 c_loss 0.215 | 328k steps/s
+[ep 10500] rew +0.0752 in_tol  57.3% kl 0.0135 lr 2.6e-04 std 0.735 c_loss 0.213 | 334k steps/s
+[eval 10500] strict 84.0% coarse 89.2% entry 84.4% pos med 0.229 mm ori med 0.062 deg
+[ep 10550] rew +0.0745 in_tol  58.2% kl 0.0155 lr 3.9e-04 std 0.738 c_loss 0.200 | 318k steps/s
+[ep 10600] rew +0.0746 in_tol  57.7% kl 0.0132 lr 5.9e-04 std 0.739 c_loss 0.212 | 330k steps/s
+[ep 10650] rew +0.0761 in_tol  58.3% kl 0.0152 lr 3.9e-04 std 0.737 c_loss 0.206 | 332k steps/s
+[ep 10700] rew +0.0738 in_tol  57.5% kl 0.0145 lr 2.6e-04 std 0.742 c_loss 0.207 | 331k steps/s
+[ep 10750] rew +0.0755 in_tol  59.1% kl 0.0149 lr 1.2e-04 std 0.732 c_loss 0.210 | 330k steps/s
+[eval 10750] strict 85.0% coarse 90.0% entry 86.0% pos med 0.226 mm ori med 0.052 deg
+[ep 10800] rew +0.0740 in_tol  58.2% kl 0.0146 lr 5.9e-04 std 0.732 c_loss 0.205 | 318k steps/s
+[ep 10850] rew +0.0752 in_tol  59.0% kl 0.0080 lr 2.6e-04 std 0.729 c_loss 0.209 | 333k steps/s
+[ep 10900] rew +0.0749 in_tol  58.7% kl 0.0152 lr 2.6e-04 std 0.732 c_loss 0.210 | 330k steps/s
+[ep 10950] rew +0.0743 in_tol  58.6% kl 0.0137 lr 5.9e-04 std 0.741 c_loss 0.212 | 348k steps/s
+[ep 11000] rew +0.0747 in_tol  57.8% kl 0.0155 lr 1.7e-04 std 0.738 c_loss 0.200 | 363k steps/s
+[eval 11000] strict 86.4% coarse 90.6% entry 87.0% pos med 0.231 mm ori med 0.056 deg
+[ep 11050] rew +0.0755 in_tol  58.5% kl 0.0149 lr 1.7e-04 std 0.738 c_loss 0.218 | 336k steps/s
+[ep 11100] rew +0.0757 in_tol  58.9% kl 0.0160 lr 1.7e-04 std 0.737 c_loss 0.207 | 343k steps/s
+[ep 11150] rew +0.0738 in_tol  57.0% kl 0.0148 lr 1.7e-04 std 0.730 c_loss 0.208 | 342k steps/s
+[ep 11200] rew +0.0745 in_tol  58.5% kl 0.0157 lr 2.6e-04 std 0.726 c_loss 0.210 | 335k steps/s
+[ep 11250] rew +0.0741 in_tol  57.8% kl 0.0119 lr 3.9e-04 std 0.732 c_loss 0.205 | 332k steps/s
+[eval 11250] strict 84.8% coarse 90.6% entry 86.6% pos med 0.301 mm ori med 0.051 deg
+[ep 11300] rew +0.0731 in_tol  57.6% kl 0.0147 lr 3.9e-04 std 0.740 c_loss 0.210 | 313k steps/s
+[ep 11350] rew +0.0748 in_tol  58.7% kl 0.0131 lr 3.9e-04 std 0.741 c_loss 0.213 | 326k steps/s
+[ep 11400] rew +0.0740 in_tol  59.1% kl 0.0155 lr 5.9e-04 std 0.734 c_loss 0.205 | 324k steps/s
+[ep 11450] rew +0.0741 in_tol  57.6% kl 0.0162 lr 2.6e-04 std 0.737 c_loss 0.206 | 330k steps/s
+[ep 11500] rew +0.0744 in_tol  58.7% kl 0.0160 lr 1.2e-04 std 0.740 c_loss 0.210 | 331k steps/s
+[eval 11500] strict 86.6% coarse 90.8% entry 86.8% pos med 0.237 mm ori med 0.054 deg
+[ep 11550] rew +0.0745 in_tol  58.1% kl 0.0126 lr 2.6e-04 std 0.743 c_loss 0.207 | 317k steps/s
+[ep 11600] rew +0.0755 in_tol  58.9% kl 0.0157 lr 2.6e-04 std 0.735 c_loss 0.209 | 330k steps/s
+[ep 11650] rew +0.0753 in_tol  60.1% kl 0.0155 lr 3.9e-04 std 0.732 c_loss 0.212 | 326k steps/s
+[ep 11700] rew +0.0755 in_tol  60.0% kl 0.0154 lr 3.9e-04 std 0.730 c_loss 0.214 | 329k steps/s
+[ep 11750] rew +0.0744 in_tol  58.6% kl 0.0164 lr 2.6e-04 std 0.736 c_loss 0.207 | 331k steps/s
+[eval 11750] strict 86.0% coarse 91.2% entry 87.2% pos med 0.224 mm ori med 0.051 deg
+[ep 11800] rew +0.0748 in_tol  59.3% kl 0.0142 lr 3.9e-04 std 0.732 c_loss 0.211 | 308k steps/s
+[ep 11850] rew +0.0736 in_tol  58.7% kl 0.0140 lr 2.6e-04 std 0.738 c_loss 0.211 | 334k steps/s
+[ep 11900] rew +0.0741 in_tol  59.4% kl 0.0184 lr 7.7e-05 std 0.741 c_loss 0.212 | 333k steps/s
+[ep 11950] rew +0.0746 in_tol  59.5% kl 0.0144 lr 1.7e-04 std 0.734 c_loss 0.210 | 333k steps/s
+[ep 12000] rew +0.0759 in_tol  60.5% kl 0.0147 lr 3.9e-04 std 0.732 c_loss 0.216 | 333k steps/s
+[eval 12000] strict 87.4% coarse 91.0% entry 87.8% pos med 0.199 mm ori med 0.055 deg
+[ep 12050] rew +0.0747 in_tol  58.7% kl 0.0140 lr 5.9e-04 std 0.734 c_loss 0.204 | 317k steps/s
+[ep 12100] rew +0.0748 in_tol  59.5% kl 0.0152 lr 1.7e-04 std 0.739 c_loss 0.215 | 332k steps/s
+[ep 12150] rew +0.0750 in_tol  60.4% kl 0.0141 lr 3.9e-04 std 0.734 c_loss 0.211 | 333k steps/s
+[ep 12200] rew +0.0747 in_tol  58.5% kl 0.0146 lr 2.6e-04 std 0.741 c_loss 0.200 | 335k steps/s
+[ep 12250] rew +0.0731 in_tol  58.7% kl 0.0146 lr 5.9e-04 std 0.738 c_loss 0.215 | 333k steps/s
+[eval 12250] strict 87.8% coarse 91.6% entry 88.4% pos med 0.208 mm ori med 0.056 deg
+[ep 12300] rew +0.0751 in_tol  59.6% kl 0.0155 lr 1.7e-04 std 0.730 c_loss 0.210 | 320k steps/s
+[ep 12350] rew +0.0736 in_tol  58.4% kl 0.0145 lr 2.6e-04 std 0.735 c_loss 0.208 | 348k steps/s
+[ep 12400] rew +0.0737 in_tol  58.4% kl 0.0143 lr 5.9e-04 std 0.736 c_loss 0.218 | 400k steps/s
+[ep 12450] rew +0.0757 in_tol  60.6% kl 0.0150 lr 2.6e-04 std 0.732 c_loss 0.209 | 349k steps/s
+[ep 12500] rew +0.0729 in_tol  59.4% kl 0.0158 lr 1.7e-04 std 0.734 c_loss 0.209 | 434k steps/s
+[eval 12500] strict 86.0% coarse 89.8% entry 87.2% pos med 0.207 mm ori med 0.053 deg
+[ep 12550] rew +0.0748 in_tol  59.9% kl 0.0155 lr 1.2e-04 std 0.738 c_loss 0.217 | 403k steps/s
+[ep 12600] rew +0.0744 in_tol  58.9% kl 0.0140 lr 3.9e-04 std 0.737 c_loss 0.213 | 414k steps/s
+[ep 12650] rew +0.0743 in_tol  60.4% kl 0.0140 lr 3.9e-04 std 0.735 c_loss 0.203 | 372k steps/s
+[ep 12700] rew +0.0730 in_tol  58.3% kl 0.0138 lr 2.6e-04 std 0.723 c_loss 0.217 | 406k steps/s
+[ep 12750] rew +0.0740 in_tol  59.1% kl 0.0143 lr 3.9e-04 std 0.730 c_loss 0.206 | 432k steps/s
+[eval 12750] strict 82.6% coarse 86.6% entry 82.8% pos med 0.205 mm ori med 0.054 deg
+[ep 12800] rew +0.0742 in_tol  58.7% kl 0.0146 lr 3.9e-04 std 0.735 c_loss 0.211 | 422k steps/s
+[ep 12850] rew +0.0744 in_tol  59.7% kl 0.0140 lr 5.9e-04 std 0.743 c_loss 0.214 | 437k steps/s
+[ep 12900] rew +0.0749 in_tol  59.9% kl 0.0109 lr 3.9e-04 std 0.735 c_loss 0.213 | 330k steps/s
+[ep 12950] rew +0.0741 in_tol  59.9% kl 0.0153 lr 3.9e-04 std 0.732 c_loss 0.214 | 435k steps/s
+[ep 13000] rew +0.0744 in_tol  60.4% kl 0.0142 lr 5.9e-04 std 0.737 c_loss 0.216 | 449k steps/s
+[eval 13000] strict 85.0% coarse 88.8% entry 85.2% pos med 0.205 mm ori med 0.050 deg
+[Done] final strict 85.00% | averaged (20 ckpts) strict 85.60%

@@ -1,14 +1,15 @@
-# Example experiment: override method / training settings without editing Python.
-#   .venv/bin/python train.py --exp configs/exp/example.yaml [--set env.reward_scale=0.3 ...]
+# Example SAC+DLS experiment: override method / training settings without editing Python.
+#   .venv/bin/python train.py --method sac+dls --exp configs/exp/example.yaml [--set env.reward_scale=0.3 ...]
+# (PolicyIK takes --set env.<field>=v ppo.<field>=v; see policy/policyik/README.md)
 #
 # Only list what differs from the defaults. Every section is optional.
-#   env:   IKConfig fields   (ik_rl/config.py)  environment, action scaling, reward, obs_features
-#   sac:   SACConfig fields  (ik_rl/config.py)  network / optimizer; obs_dim, act_dim and batch_size are
+#   env:   IKConfig fields   (policy/sac_dls/config.py)  environment, action scaling, reward, obs_features
+#   sac:   SACConfig fields  (policy/sac_dls/config.py)  network / optimizer; obs_dim, act_dim and batch_size are
 #                                               set by train.py (use train.batch_size for the batch size)
-#   train: train.py options, with underscores (python train.py --help); command-line flags still win
+#   train: train.py options, with underscores (train.py --method sac+dls --help); command-line flags still win
 #
 # Precedence: defaults < robot env_overrides < this file < --set / --obs-features.
-# The resolved values are saved to runs/<robot>/<run>/config.json and every checkpoint.
+# The resolved values are saved to runs/sac+dls/<robot>/<run>/config.json and every checkpoint.
 
 env:
   smooth_penalty: 0.06

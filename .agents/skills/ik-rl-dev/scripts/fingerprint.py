@@ -1,4 +1,4 @@
-"""Env rollout fingerprint for a robot (used to verify refactors are behavior-preserving).
+"""SAC+DLS env rollout fingerprint for a robot (used to verify refactors are behavior-preserving).
 
 Usage (from the repo root):
   PYTHONPATH=. .venv/bin/python .agents/skills/ik-rl-dev/scripts/fingerprint.py franka|ur5e
@@ -10,8 +10,8 @@ import sys
 
 import numpy as np
 
-from ik_rl.config import IKConfig
-from ik_rl.env import IKEnv, VectorIKEnv
+from policy.sac_dls.config import IKConfig
+from policy.sac_dls.env import IKEnv, VectorIKEnv
 
 robot = sys.argv[1] if len(sys.argv) > 1 else "franka"
 h = hashlib.sha256()

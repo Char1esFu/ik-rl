@@ -1,6 +1,6 @@
-"""Head-to-head evaluation of IK checkpoints on identical targets/initial configs.
+"""Head-to-head evaluation of SAC+DLS checkpoints on identical targets/initial configs.
 
-Metrics (ik_rl.evaluation, same protocol as eval.py and the training curves):
+Metrics (evaluation.benchmark, same protocol as eval.py and the training curves):
   - solver: SACIKSolver, stop at 2 mm / 0.02 rad, max 120 steps, restarts 1 and 4
   - parked: fixed-horizon rollout in the training env, final error after max_episode_steps (65)
 Usage (from the repo root):
@@ -13,16 +13,16 @@ import sys
 
 import numpy as np
 
-from ik_rl import SACIKSolver
-from ik_rl.env import IKEnv, VectorIKEnv
-from ik_rl.evaluation import EvalTargets, evaluate_parked, evaluate_solver
+from evaluation.benchmark import EvalTargets, evaluate_solver
+from policy.sac_dls import SACIKSolver, VectorIKEnv
+from policy.sac_dls.evaluation import evaluate_parked
 
 N_TESTS = 2000
 SEED = 7
 
 ROBOT = sys.argv[1]
 pairs = [a.split("=", 1) for a in sys.argv[2:]]
-targets = EvalTargets.sample(IKEnv(ROBOT), N_TESTS, np.random.default_rng(SEED))
+targets = EvalTargets.sample(ROBOT, N_TESTS, np.random.default_rng(SEED))
 
 results = {}
 for name, path in pairs:
